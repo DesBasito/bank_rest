@@ -1,0 +1,74 @@
+databaseChangeLog:
+  - changeSet:
+      id: 008-create-refresh-sessions-table
+      author: abu
+      changes:
+        - createTable:
+            tableName: refresh_sessions
+            columns:
+              - column:
+                  name: id
+                  type: serial
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: varchar(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: refresh_token
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: fingerprint
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: ua
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: ip
+                  type: varchar(45)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: expires_in
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+        - addForeignKeyConstraint:
+            baseTableName: refresh_sessions
+            baseColumnNames: user_id
+            referencedTableName: users
+            referencedColumnNames: personal_id
+            constraintName: fk_refresh_sessions_user
+            onDelete: CASCADE
+  - changeSet:
+      id: 009-create-refresh-sessions-indexes
+      author: abu
+      changes:
+        - createIndex:
+            tableName: refresh_sessions
+            indexName: idx_user_id_expires
+            columns:
+              - column:
+                  name: user_id
+              - column:
+                  name: expires_in
+        - createIndex:
+            tableName: refresh_sessions
+            indexName: idx_fingerprint
+            columns:
+              - column:
+                  name: fingerprint

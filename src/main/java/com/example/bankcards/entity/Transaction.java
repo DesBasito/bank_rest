@@ -1,0 +1,60 @@
+package com.example.bankcards.entity;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "transactions")
+public class Transaction {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Long id;
+
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JoinColumn(name = "from_card_id", nullable = false)
+    private com.example.bankcards.entity.Card fromCard;
+
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JoinColumn(name = "to_card_id", nullable = false)
+    private com.example.bankcards.entity.Card toCard;
+
+    @NotNull
+    @Column(name = "amount", nullable = false, precision = 19, scale = 2)
+    private BigDecimal amount;
+
+    @Column(name = "description", length = 500)
+    private String description;
+
+    @NotNull
+    @ColumnDefault("'PENDING'")
+    @Column(name = "status", nullable = false, length = 20)
+    private String status;
+
+    @NotNull
+    @ColumnDefault("now()")
+    @Column(name = "created_at", nullable = false)
+    private Instant createdAt;
+
+    @Column(name = "processed_at")
+    private Instant processedAt;
+
+    @Column(name = "error_message", length = 1000)
+    private String errorMessage;
+
+}
