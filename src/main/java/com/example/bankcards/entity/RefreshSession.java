@@ -2,9 +2,7 @@ package com.example.bankcards.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -15,6 +13,9 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "refresh_sessions")
 public class RefreshSession {
     @Id

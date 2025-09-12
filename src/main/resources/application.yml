@@ -1,16 +1,16 @@
 server:
   port: 8080
   servlet:
-    context-path: /api
+    context-path: /api/v1
 
 spring:
   application:
     name: bank-cards
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/bank_cards_db
-    username: ${DB_USERNAME:bank_user}
-    password: ${DB_PASSWORD:bank_password}
+    url: jdbc:postgresql://localhost:6543/bank_rest
+    username: root
+    password: qwerty
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -24,7 +24,7 @@ spring:
         default_schema: public
 
   liquibase:
-    change-log: classpath:db/changelog/db.changelog-master.yaml
+    change-log: classpath:db/migration/master.yaml
     enabled: true
 
   security:
@@ -34,8 +34,7 @@ spring:
 
 # JWT Configuration
 jwt:
-  secret: ${JWT_SECRET:mySecretKey1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ}
-  expiration: 86400000 # 24 hours in milliseconds
+  secret: YbSS/0YQOmauYLHwkyqhQaM0fuGexnIFni3tNG3bpLSSCykNUcART4vHTJWNNdxMTDdOo5R0y+b3gbaxKSlHkQ==
 
 # Application specific settings
 app:
@@ -51,12 +50,3 @@ logging:
     liquibase: INFO
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
-
-# Swagger/OpenAPI
-springdoc:
-  api-docs:
-    path: /api-docs
-  swagger-ui:
-    path: /swagger-ui.html
-    enabled: true
-  show-actuator: true

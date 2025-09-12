@@ -51,7 +51,8 @@ public class User implements UserDetails {
     @NotNull
     @ColumnDefault("true")
     @Column(name = "enabled", nullable = false)
-    Boolean enabled = false;
+    @Builder.Default
+    Boolean enabled = true;
 
     @NotNull
     @ColumnDefault("now()")
@@ -64,11 +65,17 @@ public class User implements UserDetails {
 
     @OneToMany(mappedBy = "owner")
     @BatchSize(size = 3)
-    Set<Card> cards = new LinkedHashSet<>();
+    @Builder.Default
+    transient Set<Card> cards = new LinkedHashSet<>();
 
-    @ManyToMany
-    @BatchSize(size = 2)
-    Set<Role> roles = new LinkedHashSet<>();
+    @ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    @Builder.Default
+    transient Set<Role> roles = new LinkedHashSet<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

@@ -1,5 +1,12 @@
 package com.example.bankcards.service;
 
+import com.example.bankcards.entity.Role;
+import com.example.bankcards.entity.User;
+import com.example.bankcards.entity.UserRole;
+import com.example.bankcards.repository.UserRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -9,50 +16,36 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class UserService implements UserDetailsService{
+public class UserService implements UserDetailsService {
 
-//    private final UserRepository repository;
-//
-//
-//    public User create(User user) {
-//        return repository.save(user);
-//    }
-//
-//
-//    public User getByPhoneNumber(String phoneNumber) {
-//        return repository.findByPhoneNumber(phoneNumber)
-//                .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден с номером: " + phoneNumber));
-//    }
-//
-    public UserDetailsService userDetailsService() {
-//        return this::getByPhoneNumber;
-        return null;
+    private final UserRepository repository;
+
+
+    @Transactional
+    public User create(User user) {
+        return repository.save(user);
     }
-//
-//
-//    public User getCurrentUser() {
-//        // Получение имени пользователя из контекста Spring Security
-//        var username = SecurityContextHolder.getContext().getAuthentication().getName();
-//        return getByPhoneNumber(username);
-//    }
-//
-//
-//    /**
-//     * Выдача прав администратора текущему пользователю
-//     * <p>
-//     * Нужен для демонстрации
-//     */
-//    @Deprecated
-//    public void getAdmin() {
-//        var user = getCurrentUser();
-//        user.setRole(Role.ADMIN.toString());
-//        repository.save(user);
-//    }
-//
+
+
+    public User getByPhoneNumber(String phoneNumber) {
+        return repository.findByPhoneNumber(phoneNumber)
+                .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден с номером: " + phoneNumber));
+    }
+
+    public UserDetailsService userDetailsService() {
+        return this::getByPhoneNumber;
+    }
+
+
+    public User getCurrentUser() {
+        var username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return getByPhoneNumber(username);
+    }
+
+
     @Override
     public UserDetails loadUserByUsername(String phoneNumber) throws UsernameNotFoundException {
-//        return repository.findByPhoneNumber(phoneNumber)
-//                .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден"));
-        return null;
+        return repository.findByPhoneNumber(phoneNumber)
+                .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден"));
     }
 }

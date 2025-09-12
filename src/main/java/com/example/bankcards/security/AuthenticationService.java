@@ -1,16 +1,18 @@
 package com.example.bankcards.security;
 
+import com.example.bankcards.dto.users.AuthResponse;
+import com.example.bankcards.dto.users.SignInRequest;
+import com.example.bankcards.dto.users.SignUpRequest;
+import com.example.bankcards.entity.RefreshSession;
+import com.example.bankcards.entity.Role;
 import com.example.bankcards.entity.User;
+import com.example.bankcards.repository.RefreshSessionRepository;
+import com.example.bankcards.service.UserService;
+import com.example.bankcards.util.JwtUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
-//import kg.manurov.muslim_motors.domain.dto.users.AuthResponse;
-//import kg.manurov.muslim_motors.domain.dto.users.SignInRequest;
-//import kg.manurov.muslim_motors.domain.dto.users.SignUpRequest;
-//import kg.manurov.muslim_motors.domain.models.RefreshSession;
-//import kg.manurov.muslim_motors.domain.models.User;
-//import kg.manurov.muslim_motors.repositories.repo.RefreshSessionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,7 +25,9 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -43,13 +47,19 @@ public class AuthenticationService {
      */
     public void signUp(SignUpRequest request) {
         User user = User.builder()
-                .name(request.getName())
-                .surname(request.getSurname())
+                .firstName(request.getName())
+                .lastName(request.getSurname())
                 .middleName(request.getMiddleName())
                 .phoneNumber(request.getPhoneNumber())
-                .passwordHash(passwordEncoder.encode(request.getPasswordHash()))
-                .role(request.getRole())
+                .password(passwordEncoder.encode(request.getPasswordHash()))
                 .enabled(true)
+                .roles(request.getRoleIds()
+                        .stream()
+                        .map(e -> {
+                            Role r = new Role();
+                            r.setId(e.getId());
+                            return r;
+                        }).collect(Collectors.toSet()))
                 .build();
 
         userService.create(user);
@@ -66,7 +76,7 @@ public class AuthenticationService {
                 .userDetailsService()
                 .loadUserByUsername(signInRequest.getPhoneNumber());
 
-        String access =  jwtService.generateToken(user);
+        String access = jwtService.generateToken(user);
         List<RefreshSession> sessions = refreshSessionRepository.findByUserOrderByCreatedAtAsc((User) user, PageRequest.of(0, 5));
         if (sessions.size() >= 5) {
             refreshSessionRepository.deleteAll(sessions);
@@ -78,7 +88,7 @@ public class AuthenticationService {
     @Transactional
     public AuthResponse refreshToken(UUID oldToken, HttpServletResponse response, HttpServletRequest request) {
         try {
-            if (oldToken == null){
+            if (oldToken == null) {
                 throw new IllegalArgumentException("Old token is null");
             }
             RefreshSession session = refreshSessionByRefreshToken(oldToken);
@@ -95,7 +105,7 @@ public class AuthenticationService {
 
     }
 
-    private void setRefreshToken(UUID refreshToken, HttpServletResponse response){
+    private void setRefreshToken(UUID refreshToken, HttpServletResponse response) {
         Cookie cookie = new Cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken.toString());
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
@@ -110,9 +120,9 @@ public class AuthenticationService {
                 .refreshToken(newToken)
                 .user(user)
                 .fingerprint(fingerprint)
-                .userAgent(request.getHeader("User-Agent"))
+                .ua(request.getHeader("User-Agent"))
                 .ip(request.getRemoteAddr())
-                .createdAt(Timestamp.from(Instant.now()))
+                .createdAt(Instant.now())
                 .expiresIn(System.currentTimeMillis() / 1000 + (60 * 60 * 24 * 30))
                 .build();
         refreshSessionRepository.save(refreshSession);
@@ -125,7 +135,7 @@ public class AuthenticationService {
     }
 
     private void validateRefreshToken(RefreshSession session, String fingerprint) {
-        if(!session.getFingerprint().equals(fingerprint)){
+        if (!session.getFingerprint().equals(fingerprint)) {
             throw new IllegalArgumentException("Fingerprint mismatch");
         }
         if (session.getExpiresIn() < System.currentTimeMillis() / 1000) {

@@ -1,1 +1,31 @@
-# Здесь будет OpenAPI описание всех доступных эндпоинтов и моделей данных.
+---
+openapi: "3.0.1"
+info:
+  title: "Bank REST API"
+  description: null
+  termsOfService: null
+  contact: null
+  license: null
+  version: "1.0.0"
+  extensions: null
+  summary: null
+externalDocs: null
+servers: null
+security: null
+tags: null
+paths: {}
+components:
+  schemas: null
+  responses: null
+  parameters: null
+  examples: null
+  requestBodies: null
+  headers: null
+  securitySchemes: null
+  links: null
+  callbacks: null
+  extensions: null
+  pathItems: null
+extensions: null
+jsonSchemaDialect: null
+webhooks: null
