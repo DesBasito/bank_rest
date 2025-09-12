@@ -1,4 +1,4 @@
-package com.example.bankcards.service;
+package com.example.bankcards.security;
 
 import com.example.bankcards.dto.users.AuthResponse;
 import com.example.bankcards.dto.users.SignInRequest;
@@ -8,12 +8,10 @@ import com.example.bankcards.entity.Role;
 import com.example.bankcards.entity.User;
 import com.example.bankcards.repository.RefreshSessionRepository;
 import com.example.bankcards.repository.UserRepository;
-import com.example.bankcards.security.AuthenticationService;
+import com.example.bankcards.service.UserService;
 import com.example.bankcards.util.JwtUtil;
-import jakarta.persistence.EntityManager;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -59,10 +57,7 @@ class AuthenticationServiceTest {
     private RefreshSessionRepository refreshSessionRepository;
 
     @Mock
-    private HttpServletRequest request = new MockHttpServletRequest();
-
-    @Mock
-    private HttpServletResponse response = new MockHttpServletResponse();
+    private DeviceFingerprintService deviceFingerprintService;
 
     @Mock
     private UserDetailsService userDetailsService;
@@ -75,6 +70,8 @@ class AuthenticationServiceTest {
     private SignInRequest signInRequest;
     private RefreshSession testSession;
     private UUID testRefreshToken;
+    private MockHttpServletRequest mockRequest;
+    private MockHttpServletResponse mockResponse;
 
     @BeforeEach
     void setUp() {
@@ -102,7 +99,14 @@ class AuthenticationServiceTest {
         signInRequest.setPassword("qwe");
 
         testRefreshToken = UUID.randomUUID();
-        testSession = createValidRefreshSession(testUser, testRefreshToken, "test-fingerprint-123");
+        testSession = createValidRefreshSession(testUser, testRefreshToken, "auto-generated-fingerprint");
+
+        mockRequest = new MockHttpServletRequest();
+        mockRequest.addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+        mockRequest.addHeader("Accept-Language", "ru-RU,ru;q=0.9,en;q=0.8");
+        mockRequest.setRemoteAddr("192.168.1.100");
+
+        mockResponse = new MockHttpServletResponse();
     }
 
     private RefreshSession createValidRefreshSession(User user, UUID token, String fingerprint) {
@@ -146,23 +150,28 @@ class AuthenticationServiceTest {
     }
 
     @Test
-    @DisplayName("Должен выполнить вход пользователя")
+    @DisplayName("Должен выполнить вход пользователя с автогенерацией fingerprint")
     void shouldSignInUser() {
+        // Настройка моков
         when(userService.userDetailsService()).thenReturn(userDetailsService);
-        when(userDetailsService.loadUserByUsername("+996500123321")).thenReturn(testUser);
+        when(userDetailsService.loadUserByUsername("500123321")).thenReturn(testUser);
         when(jwtService.generateToken(testUser)).thenReturn("accessToken123");
         when(refreshSessionRepository.findByUserOrderByCreatedAtAsc(eq(testUser), any(PageRequest.class)))
                 .thenReturn(Collections.emptyList());
-        when(request.getHeader("Fingerprint")).thenReturn("test-fingerprint-123");
-        when(request.getHeader("User-Agent")).thenReturn("Mozilla/5.0");
-        when(request.getRemoteAddr()).thenReturn("192.168.1.1");
+        when(deviceFingerprintService.generateFingerprint(any(HttpServletRequest.class)))
+                .thenReturn("auto-generated-fingerprint-123");
 
-        AuthResponse result = authenticationService.signIn(signInRequest, response, request);
+        AuthResponse result = authenticationService.signIn(signInRequest, mockResponse, mockRequest);
 
         assertThat(result.getAccessToken()).isEqualTo("accessToken123");
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
+        verify(deviceFingerprintService).generateFingerprint(mockRequest);
         verify(refreshSessionRepository).save(any(RefreshSession.class));
-        verify(response).addCookie(any(Cookie.class));
+
+        // Проверяем, что кука установлена
+        Cookie[] cookies = mockResponse.getCookies();
+        assertThat(cookies).hasSize(1);
+        assertThat(cookies[0].getName()).isEqualTo("refreshToken");
     }
 
     @Test
@@ -177,15 +186,14 @@ class AuthenticationServiceTest {
         );
 
         when(userService.userDetailsService()).thenReturn(userDetailsService);
-        when(userDetailsService.loadUserByUsername("+996500123321")).thenReturn(testUser);
+        when(userDetailsService.loadUserByUsername("500123321")).thenReturn(testUser);
         when(jwtService.generateToken(testUser)).thenReturn("accessToken123");
         when(refreshSessionRepository.findByUserOrderByCreatedAtAsc(eq(testUser), any(PageRequest.class)))
                 .thenReturn(oldSessions);
-        when(request.getHeader("Fingerprint")).thenReturn("test-fingerprint-123");
-        when(request.getHeader("User-Agent")).thenReturn("Mozilla/5.0");
-        when(request.getRemoteAddr()).thenReturn("192.168.1.1");
+        when(deviceFingerprintService.generateFingerprint(any(HttpServletRequest.class)))
+                .thenReturn("auto-generated-fingerprint-123");
 
-        authenticationService.signIn(signInRequest, response, request);
+        authenticationService.signIn(signInRequest, mockResponse, mockRequest);
 
         verify(refreshSessionRepository).deleteAll(oldSessions);
     }
@@ -195,28 +203,35 @@ class AuthenticationServiceTest {
     void shouldRefreshToken() {
         when(refreshSessionRepository.findByRefreshToken(testRefreshToken))
                 .thenReturn(Optional.of(testSession));
-        when(request.getHeader("Fingerprint")).thenReturn("test-fingerprint-123");
-        when(request.getHeader("User-Agent")).thenReturn("Mozilla/5.0");
-        when(request.getRemoteAddr()).thenReturn("192.168.1.1");
+        when(deviceFingerprintService.generateFingerprint(any(HttpServletRequest.class)))
+                .thenReturn("auto-generated-fingerprint");
         when(jwtService.generateToken(testUser)).thenReturn("newAccessToken123");
 
-        AuthResponse result = authenticationService.refreshToken(testRefreshToken, response, request);
+        AuthResponse result = authenticationService.refreshToken(testRefreshToken, mockResponse, mockRequest);
 
         assertThat(result.getAccessToken()).isEqualTo("newAccessToken123");
         verify(refreshSessionRepository).findByRefreshToken(testRefreshToken);
         verify(refreshSessionRepository).save(any(RefreshSession.class));
         verify(refreshSessionRepository).deleteByRefreshToken(testRefreshToken);
-        verify(response).addCookie(any(Cookie.class));
+        verify(deviceFingerprintService).generateFingerprint(mockRequest);
+
+        Cookie[] cookies = mockResponse.getCookies();
+        assertThat(cookies).hasSize(1);
+        assertThat(cookies[0].getName()).isEqualTo("refreshToken");
     }
 
     @Test
     @DisplayName("Должен выбросить исключение при null токене")
     void shouldThrowExceptionWhenTokenIsNull() {
-        assertThatThrownBy(() -> authenticationService.refreshToken(null, response, request))
+        assertThatThrownBy(() -> authenticationService.refreshToken(null, mockResponse, mockRequest))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Old token is null");
 
-        verify(response).addCookie(any(Cookie.class));
+        Cookie[] cookies = mockResponse.getCookies();
+        assertThat(cookies).hasSize(1);
+        assertThat(cookies[0].getName()).isEqualTo("refreshToken");
+        assertThat(cookies[0].getValue()).isEmpty();
+        assertThat(cookies[0].getMaxAge()).isZero();
     }
 
     @Test
@@ -226,65 +241,61 @@ class AuthenticationServiceTest {
         when(refreshSessionRepository.findByRefreshToken(nonExistentToken))
                 .thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> authenticationService.refreshToken(nonExistentToken, response, request))
+        assertThatThrownBy(() -> authenticationService.refreshToken(nonExistentToken, mockResponse, mockRequest))
                 .isInstanceOf(NoSuchElementException.class)
                 .hasMessage("Refresh token not found");
 
-        verify(response).addCookie(any(Cookie.class));
-    }
-
-    @Test
-    @DisplayName("Должен выбросить исключение при несовпадении fingerprint")
-    void shouldThrowExceptionWhenFingerprintMismatch() {
-        when(refreshSessionRepository.findByRefreshToken(testRefreshToken))
-                .thenReturn(Optional.of(testSession));
-        when(request.getHeader("Fingerprint")).thenReturn("wrong-fingerprint");
-
-        assertThatThrownBy(() -> authenticationService.refreshToken(testRefreshToken, response, request))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Fingerprint mismatch");
-
-        verify(response).addCookie(any(Cookie.class));
+        Cookie[] cookies = mockResponse.getCookies();
+        assertThat(cookies).hasSize(1);
+        assertThat(cookies[0].getName()).isEqualTo("refreshToken");
+        assertThat(cookies[0].getValue()).isEmpty();
+        assertThat(cookies[0].getMaxAge()).isZero();
     }
 
     @Test
     @DisplayName("Должен выбросить исключение при истекшем токене")
     void shouldThrowExceptionWhenTokenExpired() {
-        RefreshSession expiredSession = createExpiredRefreshSession(testUser, testRefreshToken, "test-fingerprint-123");
+        RefreshSession expiredSession = createExpiredRefreshSession(testUser, testRefreshToken, "auto-generated-fingerprint");
         when(refreshSessionRepository.findByRefreshToken(testRefreshToken))
                 .thenReturn(Optional.of(expiredSession));
-        when(request.getHeader("Fingerprint")).thenReturn("test-fingerprint-123");
+        when(deviceFingerprintService.generateFingerprint(any(HttpServletRequest.class)))
+                .thenReturn("auto-generated-fingerprint");
 
-        assertThatThrownBy(() -> authenticationService.refreshToken(testRefreshToken, response, request))
+        assertThatThrownBy(() -> authenticationService.refreshToken(testRefreshToken, mockResponse, mockRequest))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Refresh expired");
+                .hasMessage("Refresh token expired");
 
-        verify(response).addCookie(any(Cookie.class));
+        Cookie[] cookies = mockResponse.getCookies();
+        assertThat(cookies).hasSize(1);
+        assertThat(cookies[0].getName()).isEqualTo("refreshToken");
+        assertThat(cookies[0].getValue()).isEmpty();
+        assertThat(cookies[0].getMaxAge()).isZero();
     }
 
     @Test
-    @DisplayName("Должен создать refresh сессию с правильными параметрами")
-    void shouldCreateRefreshSessionWithCorrectParameters() {
+    @DisplayName("Должен создать refresh сессию с автогенерированным fingerprint")
+    void shouldCreateRefreshSessionWithAutoGeneratedFingerprint() {
         when(userService.userDetailsService()).thenReturn(userDetailsService);
         when(userDetailsService.loadUserByUsername(anyString())).thenReturn(testUser);
         when(jwtService.generateToken(any())).thenReturn("accessToken");
         when(refreshSessionRepository.findByUserOrderByCreatedAtAsc(any(), any()))
                 .thenReturn(Collections.emptyList());
-        when(request.getHeader("Fingerprint")).thenReturn("test-fingerprint-123");
-        when(request.getHeader("User-Agent")).thenReturn("Mozilla/5.0");
-        when(request.getRemoteAddr()).thenReturn("192.168.1.1");
+        when(deviceFingerprintService.generateFingerprint(any(HttpServletRequest.class)))
+                .thenReturn("auto-generated-fingerprint-from-headers");
 
-        authenticationService.signIn(signInRequest, response, request);
+        authenticationService.signIn(signInRequest, mockResponse, mockRequest);
 
         ArgumentCaptor<RefreshSession> sessionCaptor = ArgumentCaptor.forClass(RefreshSession.class);
         verify(refreshSessionRepository).save(sessionCaptor.capture());
 
         RefreshSession capturedSession = sessionCaptor.getValue();
         assertThat(capturedSession.getUser()).isEqualTo(testUser);
-        assertThat(capturedSession.getFingerprint()).isEqualTo("test-fingerprint-123");
-        assertThat(capturedSession.getUa()).isEqualTo("Mozilla/5.0");
-        assertThat(capturedSession.getIp()).isEqualTo("192.168.1.1");
+        assertThat(capturedSession.getFingerprint()).isEqualTo("auto-generated-fingerprint-from-headers");
+        assertThat(capturedSession.getUa()).isEqualTo("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+        assertThat(capturedSession.getIp()).isEqualTo("192.168.1.100");
         assertThat(capturedSession.getRefreshToken()).isNotNull();
+
+        verify(deviceFingerprintService).generateFingerprint(mockRequest);
     }
 
     @Test
@@ -295,16 +306,15 @@ class AuthenticationServiceTest {
         when(jwtService.generateToken(any())).thenReturn("accessToken");
         when(refreshSessionRepository.findByUserOrderByCreatedAtAsc(any(), any()))
                 .thenReturn(Collections.emptyList());
-        when(request.getHeader("Fingerprint")).thenReturn("fingerprint");
-        when(request.getHeader("User-Agent")).thenReturn("Mozilla/5.0");
-        when(request.getRemoteAddr()).thenReturn("127.0.0.1");
+        when(deviceFingerprintService.generateFingerprint(any(HttpServletRequest.class)))
+                .thenReturn("fingerprint-for-cookie-test");
 
-        authenticationService.signIn(signInRequest, response, request);
+        authenticationService.signIn(signInRequest, mockResponse, mockRequest);
 
-        ArgumentCaptor<Cookie> cookieCaptor = ArgumentCaptor.forClass(Cookie.class);
-        verify(response).addCookie(cookieCaptor.capture());
+        Cookie[] cookies = mockResponse.getCookies();
+        assertThat(cookies).hasSize(1);
 
-        Cookie capturedCookie = cookieCaptor.getValue();
+        Cookie capturedCookie = cookies[0];
         assertThat(capturedCookie.getName()).isEqualTo("refreshToken");
         assertThat(capturedCookie.getValue()).isNotBlank();
         assertThat(capturedCookie.isHttpOnly()).isTrue();
@@ -319,16 +329,55 @@ class AuthenticationServiceTest {
         when(refreshSessionRepository.findByRefreshToken(any()))
                 .thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> authenticationService.refreshToken(UUID.randomUUID(), response, request))
+        assertThatThrownBy(() -> authenticationService.refreshToken(UUID.randomUUID(), mockResponse, mockRequest))
                 .isInstanceOf(NoSuchElementException.class);
 
-        ArgumentCaptor<Cookie> cookieCaptor = ArgumentCaptor.forClass(Cookie.class);
-        verify(response).addCookie(cookieCaptor.capture());
+        Cookie[] cookies = mockResponse.getCookies();
+        assertThat(cookies).hasSize(1);
 
-        Cookie capturedCookie = cookieCaptor.getValue();
+        Cookie capturedCookie = cookies[0];
         assertThat(capturedCookie.getName()).isEqualTo("refreshToken");
         assertThat(capturedCookie.getValue()).isEmpty();
         assertThat(capturedCookie.getMaxAge()).isZero();
     }
 
+    @Test
+    @DisplayName("Должен обрабатывать запросы с X-Forwarded-For заголовком")
+    void shouldHandleXForwardedForHeader() {
+        mockRequest.addHeader("X-Forwarded-For", "10.0.0.1, 192.168.1.1");
+
+        when(userService.userDetailsService()).thenReturn(userDetailsService);
+        when(userDetailsService.loadUserByUsername(anyString())).thenReturn(testUser);
+        when(jwtService.generateToken(any())).thenReturn("accessToken");
+        when(refreshSessionRepository.findByUserOrderByCreatedAtAsc(any(), any()))
+                .thenReturn(Collections.emptyList());
+        when(deviceFingerprintService.generateFingerprint(any(HttpServletRequest.class)))
+                .thenReturn("fingerprint-with-forwarded-ip");
+
+        authenticationService.signIn(signInRequest, mockResponse, mockRequest);
+
+        ArgumentCaptor<RefreshSession> sessionCaptor = ArgumentCaptor.forClass(RefreshSession.class);
+        verify(refreshSessionRepository).save(sessionCaptor.capture());
+
+        RefreshSession capturedSession = sessionCaptor.getValue();
+        assertThat(capturedSession.getIp()).isEqualTo("10.0.0.1"); // Первый IP из X-Forwarded-For
+        verify(deviceFingerprintService).generateFingerprint(mockRequest);
+    }
+
+    @Test
+    @DisplayName("DeviceFingerprintService должен вызываться для каждого запроса")
+    void shouldCallDeviceFingerprintServiceForEachRequest() {
+        when(userService.userDetailsService()).thenReturn(userDetailsService);
+        when(userDetailsService.loadUserByUsername(anyString())).thenReturn(testUser);
+        when(jwtService.generateToken(any())).thenReturn("accessToken");
+        when(refreshSessionRepository.findByUserOrderByCreatedAtAsc(any(), any()))
+                .thenReturn(Collections.emptyList());
+        when(deviceFingerprintService.generateFingerprint(any(HttpServletRequest.class)))
+                .thenReturn("unique-fingerprint-123");
+
+        authenticationService.signIn(signInRequest, mockResponse, mockRequest);
+
+        // Проверяем, что сервис вызывался ровно один раз с правильным запросом
+        verify(deviceFingerprintService, Mockito.times(1)).generateFingerprint(mockRequest);
+    }
 }

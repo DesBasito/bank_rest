@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 public class AuthenticationService {
     private final UserService userService;
     private final JwtUtil jwtService;
+    private final DeviceFingerprintService deviceFingerprintService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final RefreshSessionRepository refreshSessionRepository;
@@ -84,7 +85,7 @@ public class AuthenticationService {
         }
 
         // Автоматически генерируем fingerprint на основе HTTP заголовков
-        String deviceFingerprint = DeviceFingerprintService.generateFingerprint(request);
+        String deviceFingerprint = deviceFingerprintService.generateFingerprint(request);
 
         generateRefreshToken((User) user, deviceFingerprint, request, response);
         return new AuthResponse(access);
@@ -100,7 +101,7 @@ public class AuthenticationService {
             User user = session.getUser();
 
             // Проверяем fingerprint (для обновления токена используем тот же fingerprint)
-            String deviceFingerprint = DeviceFingerprintService.generateFingerprint(request);
+            String deviceFingerprint = deviceFingerprintService.generateFingerprint(request);
             validateRefreshToken(session, deviceFingerprint);
 
             generateRefreshToken(user, deviceFingerprint, request, response);
