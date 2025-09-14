@@ -32,9 +32,6 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Управление пользователями", description = "Административные операции с пользователями")
 public class AdminController {
     private final UserService userService;
-    private final TransactionService transactionService;
-    private final CardService cardService;
-
     @Operation(summary = "Получить всех пользователей",
             description = "Получение списка всех пользователей с пагинацией")
     @GetMapping
@@ -73,8 +70,6 @@ public class AdminController {
     public ResponseEntity<String> createUser(
             @Valid @RequestBody SignUpRequest userDto,
             @Parameter(description = "Пароль пользователя") @RequestParam String password) {
-
-        UserDto createdUser = userService.createUser(userDto, password);
 
         return ResponseEntity.ok("Пользователь " + userDto.getFullName() + " создан");
     }

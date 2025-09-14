@@ -3,16 +3,14 @@ package com.example.bankcards.service;
 import com.example.bankcards.dto.CardDto;
 import com.example.bankcards.dto.mappers.CardMapper;
 import com.example.bankcards.entity.Card;
-import com.example.bankcards.entity.enums.CardStatus;
 import com.example.bankcards.entity.User;
+import com.example.bankcards.entity.enums.CardStatus;
 import com.example.bankcards.repositories.CardRepository;
 import com.example.bankcards.repositories.UserRepository;
 import com.example.bankcards.util.EncryptionUtil;
 import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -38,6 +36,7 @@ public class CardService {
     private final CardMapper cardMapper;
     @Value("${app.expiry_date}")
     private Integer expiryDate;
+    private static final String CARD_NOT_FOUND = "Карта не найдена!";
 
 
     public CardDto createCard(Long ownerId, String cardType) {
@@ -68,7 +67,7 @@ public class CardService {
     @Transactional(readOnly = true)
     public CardDto getCardById(Long id) {
         Card card = cardRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Карта не найдена!"));
+                .orElseThrow(() -> new NoSuchElementException(CARD_NOT_FOUND));
         return cardMapper.toDto(card);
     }
 
@@ -120,16 +119,16 @@ public class CardService {
         log.info("Блокировка карты с ID: {}, причина: {}", cardId, reason);
 
         Card card = cardRepository.findById(cardId)
-                .orElseThrow(() -> new NoSuchElementException("Карта не найдена!"));
+                .orElseThrow(() -> new NoSuchElementException(CARD_NOT_FOUND));
 
-        if (card.getStatus() == CardStatus.BLOCKED.getDescription()) {
+        if (Objects.equals(card.getStatus(), CardStatus.BLOCKED.getDescription())) {
             throw new ValidationException("Карта уже заблокирована");
         }
 
         card.setStatus(CardStatus.BLOCKED.name());
         Card updatedCard = cardRepository.save(card);
 
-        log.info("Карта {} заблокирована", maskCardNumber(card));
+        log.info("Карта {} заблокирована", card);
 
         return cardMapper.toDto(updatedCard);
     }
@@ -141,9 +140,9 @@ public class CardService {
         log.info("Разблокировка карты с ID: {}", cardId);
 
         Card card = cardRepository.findById(cardId)
-                .orElseThrow(() -> new NoSuchElementException("Карта не найдена!"));
+                .orElseThrow(() -> new NoSuchElementException(CARD_NOT_FOUND));
 
-        if (card.getStatus() != CardStatus.BLOCKED.name()) {
+        if (!Objects.equals(card.getStatus(), CardStatus.BLOCKED.name())) {
             throw new ValidationException("Карта не заблокирована");
         }
 
@@ -154,7 +153,7 @@ public class CardService {
         card.setStatus(CardStatus.ACTIVE.name());
         Card updatedCard = cardRepository.save(card);
 
-        log.info("Карта {} разблокирована", maskCardNumber(card));
+        log.info("Карта {} разблокирована", card);
 
         return cardMapper.toDto(updatedCard);
     }
@@ -166,14 +165,14 @@ public class CardService {
         log.info("Пополнение карты с ID: {} на сумму: {}", cardId, amount);
 
         Card card = cardRepository.findById(cardId)
-                .orElseThrow(() -> new NoSuchElementException("Карта не найдена!"));
+                .orElseThrow(() -> new NoSuchElementException(CARD_NOT_FOUND));
 
         validateCardForOperation(card);
 
         card.setBalance(card.getBalance().add(amount));
         Card updatedCard = cardRepository.save(card);
 
-        log.info("Баланс карты {} пополнен на {}", maskCardNumber(card), amount);
+        log.info("Баланс карты {} пополнен на {}", card, amount);
 
         return cardMapper.toDto(updatedCard);
     }
@@ -200,7 +199,7 @@ public class CardService {
         card.setBalance(card.getBalance().subtract(amount));
         Card updatedCard = cardRepository.save(card);
 
-        log.info("С карты {} списано {}", maskCardNumber(card), amount);
+        log.info("С карты {} списано {}", card, amount);
 
         return cardMapper.toDto(updatedCard);
     }
@@ -219,7 +218,7 @@ public class CardService {
             if (!Objects.equals(card.getStatus(), CardStatus.EXPIRED.name())) {
                 card.setStatus(CardStatus.EXPIRED.name());
                 cardRepository.save(card);
-                log.info("Карта {} помечена как истекшая", maskCardNumber(card));
+                log.info("Карта {} помечена как истекшая", card);
             }
         }
 
@@ -241,7 +240,7 @@ public class CardService {
         }
 
         cardRepository.delete(card);
-        log.info("Карта {} удалена", maskCardNumber(card));
+        log.info("Карта {} удалена", card);
     }
 
     /**
@@ -257,17 +256,6 @@ public class CardService {
         }
     }
 
-    /**
-     * Маскирование номера карты для логов
-     */
-    private String maskCardNumber(Card card) {
-        try {
-            String decryptedNumber = encryptionUtil.decryptCardNumber(card.getCardNumber());
-            return encryptionUtil.maskCardNumber(decryptedNumber);
-        } catch (Exception e) {
-            return "****";
-        }
-    }
 
 
 }
