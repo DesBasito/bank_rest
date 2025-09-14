@@ -1,14 +1,11 @@
 package com.example.bankcards.util;
 
-import com.example.bankcards.repository.UserRepository;
+import com.example.bankcards.repositories.UserRepository;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -130,23 +127,6 @@ public class JwtUtil {
             return null;
         }
     }
-
-//    public User extractUser(String token) {
-//        try {
-//            Claims claims = extractAllClaims(token);
-//            Object userIdClaim = claims.get("userId");
-//            Long id;
-//            if (userIdClaim instanceof Integer) {
-//                id = ((Integer) userIdClaim).longValue();
-//            } else if (userIdClaim instanceof Long) {
-//                id =  (Long) userIdClaim;
-//            }
-//
-//            return null;
-//        } catch (JwtException | IllegalArgumentException e) {
-//            return null;
-//        }
-//    }
 
     public String extractUsername(String token) {
         try {

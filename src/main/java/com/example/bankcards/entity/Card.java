@@ -41,6 +41,9 @@ public class Card {
     @Column(name = "expiry_date", nullable = false)
     LocalDate expiryDate;
 
+    @Column(name = "type", columnDefinition = "card_type not null")
+    private String type;
+
     @NotNull
     @ColumnDefault("'ACTIVE'")
     @Column(name = "status", nullable = false, length = 20)

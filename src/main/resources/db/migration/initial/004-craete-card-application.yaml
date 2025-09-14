@@ -27,6 +27,14 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
+                  name: type
+                  type: card_type
+                  constraints:
+                    nullable: false
+              - column:
+                  name: comment
+                  type: varchar(255)
+              - column:
                   name: status
                   type: card_application_status
                   defaultValue: 'PENDING'

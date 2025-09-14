@@ -2,6 +2,7 @@ package com.example.bankcards.controller;
 
 import com.example.bankcards.dto.CardDto;
 import com.example.bankcards.service.CardService;
+import com.example.bankcards.util.AuthenticatedUserUtil;
 import com.example.bankcards.util.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -34,11 +35,8 @@ import java.util.List;
 @RequiredArgsConstructor
 @Tag(name = "Карты", description = "Операции управления банковскими картами")
 public class CardController {
-
-    private static final Logger logger = LoggerFactory.getLogger(CardController.class);
-
+    private final AuthenticatedUserUtil userUtil;
     private final CardService cardService;
-    private final JwtUtil jwtUtil;
 
     @Operation(summary = "Получить все карты пользователя",
             description = "Получение списка карт текущего пользователя с пагинацией")
@@ -54,7 +52,7 @@ public class CardController {
             Pageable pageable,
             HttpServletRequest request) {
 
-        Long userId = getUserIdFromToken(request);
+        Long userId = userUtil.getUserIdFromToken(request);
 
         Page<CardDto> cards = cardService.getUserCards(userId, pageable);
         return ResponseEntity.ok(cards);
@@ -64,7 +62,7 @@ public class CardController {
             description = "Получение списка активных карт текущего пользователя")
     @GetMapping("/my/active")
     public ResponseEntity<List<CardDto>> getMyActiveCards(HttpServletRequest request) {
-        Long userId = getUserIdFromToken(request);
+        Long userId = userUtil.getUserIdFromToken(request);
 
         List<CardDto> cards = cardService.getUserActiveCards(userId);
         return ResponseEntity.ok(cards);
@@ -93,13 +91,4 @@ public class CardController {
         return ResponseEntity.ok(card);
     }
 
-
-    private Long getUserIdFromToken(HttpServletRequest request) {
-        String authHeader = request.getHeader("Authorization");
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
-            return jwtUtil.extractUserId(token);
-        }
-        throw new AccessDeniedException("JWT token not found");
-    }
 }

@@ -43,14 +43,14 @@ VALUES (1, 3, 1000.00, 'Перевод другу', 'SUCCESS'::transaction_statu
        (3, 6, 1500.00, 'Перевод на заблокированную карту', 'CANCELLED'::transaction_status, NOW() - INTERVAL '1 hour'),
        (1, 3, 100.00, 'Тестовый перевод', 'REFUNDED'::transaction_status, NOW() - INTERVAL '6 hours');
 
-INSERT INTO card_applications (user_id, status, processed_at)
-VALUES (2, 'APPROVED'::card_application_status, NOW() - INTERVAL '10 days'),
-       (3, 'APPROVED'::card_application_status, NOW() - INTERVAL '7 days'),
-       (4, 'APPROVED'::card_application_status, NOW() - INTERVAL '12 days'),
-       (5, 'REJECTED'::card_application_status, NOW() - INTERVAL '3 days'),
-       (6, 'APPROVED'::card_application_status, NOW() - INTERVAL '15 days'),
-       (5, 'PENDING'::card_application_status, NULL),
-       (6, 'CANCELLED'::card_application_status, NULL);
+INSERT INTO card_applications (user_id, status, type, processed_at)
+VALUES (2, 'APPROVED'::card_application_status,'DEBIT'::card_type, NOW() - INTERVAL '10 days'),
+       (3, 'APPROVED'::card_application_status,'DEBIT'::card_type, NOW() - INTERVAL '7 days'),
+       (4, 'APPROVED'::card_application_status,'DEBIT'::card_type, NOW() - INTERVAL '12 days'),
+       (5, 'REJECTED'::card_application_status,'DEBIT'::card_type, NOW() - INTERVAL '3 days'),
+       (6, 'APPROVED'::card_application_status,'DEBIT'::card_type, NOW() - INTERVAL '15 days'),
+       (5, 'PENDING'::card_application_status,'DEBIT'::card_type, NULL),
+       (6, 'CANCELLED'::card_application_status,'DEBIT'::card_type, NULL);
 
 INSERT INTO refresh_sessions (user_id, refresh_token, fingerprint, ua, ip, expires_in)
 VALUES (2, 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'::uuid, 'fp_user2_device1',

@@ -1,6 +1,6 @@
 package com.example.bankcards.util;
 
-import com.example.bankcards.repository.CardRepository;
+import com.example.bankcards.repositories.CardRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

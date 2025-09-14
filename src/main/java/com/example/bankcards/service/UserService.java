@@ -1,11 +1,7 @@
 package com.example.bankcards.service;
 
-import com.example.bankcards.entity.Role;
 import com.example.bankcards.entity.User;
-import com.example.bankcards.entity.UserRole;
-import com.example.bankcards.repository.UserRepository;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
+import com.example.bankcards.repositories.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;

@@ -1,6 +1,6 @@
 package com.example.bankcards.controller;
 
-import com.example.bankcards.dto.TransactionDto;
+import com.example.bankcards.dto.transactions.TransactionDto;
 import com.example.bankcards.entity.Transaction;
 import com.example.bankcards.service.TransactionService;
 import com.example.bankcards.util.AuthenticatedUserUtil;

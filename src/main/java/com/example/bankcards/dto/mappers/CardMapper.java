@@ -3,7 +3,6 @@ package com.example.bankcards.dto.mappers;
 import com.example.bankcards.dto.CardDto;
 import com.example.bankcards.entity.Card;
 import com.example.bankcards.entity.enums.CardStatus;
-import com.example.bankcards.util.EncryptionUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -12,23 +11,22 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class CardMapper {
-    private final EncryptionUtil encryptionUtil;
+
     /**
-     * Преобразование Entity в DTO
+     * Преобразование Entity в DTO без маскирования
+     * (маскирование будет выполнено аспектом)
      */
     public CardDto toDto(Card card) {
         CardDto dto = new CardDto();
         dto.setId(card.getId());
 
-        try {
-            String decryptedNumber = encryptionUtil.decryptCardNumber(card.getCardNumber());
-            dto.setCardNumber(encryptionUtil.maskCardNumber(decryptedNumber));
-        } catch (Exception e) {
-            log.error("Ошибка при расшифровке номера карты", e);
-            dto.setCardNumber("****");
-        }
+        // Оставляем номер карты как есть - аспект его обработает
+        dto.setCardNumber(card.getCardNumber());
 
-        dto.setOwnerName(String.format("%s %s %s%n",card.getOwner().getFirstName(), card.getOwner().getLastName(), card.getOwner().getMiddleName()));
+        dto.setOwnerName(String.format("%s %s %s",
+                card.getOwner().getFirstName(),
+                card.getOwner().getLastName(),
+                card.getOwner().getMiddleName()));
         dto.setOwnerId(card.getOwner().getId());
         dto.setExpiryDate(card.getExpiryDate());
         dto.setStatus(CardStatus.valueOf(card.getStatus()).getDescription());

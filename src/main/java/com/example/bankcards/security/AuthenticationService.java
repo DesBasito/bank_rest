@@ -6,7 +6,7 @@ import com.example.bankcards.dto.users.SignUpRequest;
 import com.example.bankcards.entity.RefreshSession;
 import com.example.bankcards.entity.Role;
 import com.example.bankcards.entity.User;
-import com.example.bankcards.repository.RefreshSessionRepository;
+import com.example.bankcards.repositories.RefreshSessionRepository;
 import com.example.bankcards.service.UserService;
 import com.example.bankcards.util.JwtUtil;
 import jakarta.servlet.http.Cookie;

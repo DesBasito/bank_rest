@@ -1,4 +1,4 @@
-package com.example.bankcards.repository;
+package com.example.bankcards.repositories;
 
 import com.example.bankcards.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;

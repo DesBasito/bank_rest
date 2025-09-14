@@ -1,4 +1,4 @@
-package com.example.bankcards.repository;
+package com.example.bankcards.repositories;
 
 import com.example.bankcards.entity.RefreshSession;
 import com.example.bankcards.entity.User;
