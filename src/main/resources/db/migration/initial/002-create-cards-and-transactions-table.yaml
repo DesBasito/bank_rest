@@ -4,7 +4,10 @@ databaseChangeLog:
       author: abu
       changes:
         - sql:
-            sql: "CREATE TYPE card_status AS ENUM ('ACTIVE', 'BLOCKED', 'EXPIRED');"
+            sql: "
+            CREATE TYPE card_status AS ENUM ('ACTIVE', 'BLOCKED', 'EXPIRED');
+            CREATE TYPE transaction_status AS ENUM ('SUCCESS', 'CANCELLED', 'REFUNDED');
+            "
   - changeSet:
       id: 005-create-cards-table
       author: abu
@@ -26,7 +29,7 @@ databaseChangeLog:
                     unique: true
               - column:
                   name: owner_id
-                  type: varchar
+                  type: bigserial
                   constraints:
                     nullable: false
               - column:
@@ -60,7 +63,7 @@ databaseChangeLog:
             baseTableName: cards
             baseColumnNames: owner_id
             referencedTableName: users
-            referencedColumnNames: personal_id
+            referencedColumnNames: id
             constraintName: fk_cards_owner
             onDelete: CASCADE
         - createIndex:
@@ -108,8 +111,8 @@ databaseChangeLog:
                   type: varchar(500)
               - column:
                   name: status
-                  type: varchar(20)
-                  defaultValue: 'PENDING'
+                  type: transaction_status
+                  defaultValue: 'SUCCESS'
                   constraints:
                     nullable: false
               - column:

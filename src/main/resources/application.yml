@@ -6,6 +6,9 @@ server:
 spring:
   application:
     name: bank-cards
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
 
   datasource:
     url: jdbc:postgresql://localhost:6543/bank_rest
@@ -39,10 +42,17 @@ jwt:
 # Application specific settings
 app:
   encryption:
-    key: ${ENCRYPTION_KEY:myEncryptionKey123456789012345678901234567890}
+    key: cd0211c7721d48006aff56996fe13e33d2b4924672b3a6aa2d2bf7786bfa0fee
+  expiry_date: 3
 
 # Logging
 logging:
+  file:
+    name: logs/app.log
+  logback:
+    rolling policy:
+      max-history: 5
+      max-file-size: 10MB
   level:
     com.example.bankcards: DEBUG
     org.springframework.security: DEBUG

@@ -25,8 +25,8 @@ import java.util.Set;
 @Table(name = "users")
 public class User implements UserDetails {
     @Id
-    @Column(name = "personal_id", nullable = false)
-    String id;
+    @Column(name = "id", nullable = false)
+    Long id;
 
     @NotNull
     @Column(name = "phone_number", nullable = false)
@@ -80,6 +80,10 @@ public class User implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return roles.stream().map(e -> new SimpleGrantedAuthority("ROLE_"+e.getName())).toList();
+    }
+
+    public String getFullName(){
+        return String.format("%s %s %s%n", lastName ,firstName, lastName);
     }
 
     @Override

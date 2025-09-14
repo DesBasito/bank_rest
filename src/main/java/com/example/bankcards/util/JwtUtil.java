@@ -1,9 +1,14 @@
 package com.example.bankcards.util;
 
+import com.example.bankcards.repository.UserRepository;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -14,10 +19,12 @@ import java.util.Map;
 import java.util.function.Function;
 
 @Component
+@RequiredArgsConstructor
 public class JwtUtil {
 
     @Value("${jwt.secret}")
     private String secret;
+    private final UserRepository repository;
 
     private SecretKey getSigningKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secret);
@@ -41,10 +48,31 @@ public class JwtUtil {
 
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
+        if (userDetails instanceof com.example.bankcards.entity.User user) {
+            claims.put("userId", user.getId());
+            claims.put("firstName", user.getFirstName());
+            claims.put("middleName", user.getMiddleName());
+            claims.put("lastName", user.getLastName());
+        }
         long jwtExpiration = 5 * 24 * 60 * 60 * 1000L;
         return createToken(claims, userDetails.getUsername(), jwtExpiration);
     }
 
+    public Long extractUserId(String token) {
+        try {
+            Claims claims = extractAllClaims(token);
+            Object userIdClaim = claims.get("userId");
+
+            if (userIdClaim instanceof Integer) {
+                return ((Integer) userIdClaim).longValue();
+            } else if (userIdClaim instanceof Long) {
+                return (Long) userIdClaim;
+            }
+            return null;
+        } catch (JwtException | IllegalArgumentException e) {
+            return null;
+        }
+    }
 
     private String createToken(Map<String, Object> claims, String subject, long expiration) {
         return Jwts.builder()
@@ -68,6 +96,57 @@ public class JwtUtil {
             return false;
         }
     }
+
+    public String extractFullName(String token) {
+        try {
+            Claims claims = extractAllClaims(token);
+            Object firstName = claims.get("firstName");
+            Object lastName = claims.get("lastName");
+            Object middleName = claims.get("middleName");
+
+            String firstNameStr = (firstName instanceof String) ? (String) firstName : "";
+            String lastNameStr = (lastName instanceof String) ? (String) lastName : "";
+            String middleNameStr = (middleName instanceof String) ? (String) middleName : "";
+
+            StringBuilder fullName = new StringBuilder();
+
+            if (!lastNameStr.isEmpty()) {
+                fullName.append(lastNameStr);
+            }
+
+            if (!firstNameStr.isEmpty()) {
+                if (fullName.length() > 0) fullName.append(" ");
+                fullName.append(firstNameStr);
+            }
+
+            if (!middleNameStr.isEmpty()) {
+                if (fullName.length() > 0) fullName.append(" ");
+                fullName.append(middleNameStr);
+            }
+
+            return fullName.length() > 0 ? fullName.toString() : null;
+
+        } catch (JwtException | IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+//    public User extractUser(String token) {
+//        try {
+//            Claims claims = extractAllClaims(token);
+//            Object userIdClaim = claims.get("userId");
+//            Long id;
+//            if (userIdClaim instanceof Integer) {
+//                id = ((Integer) userIdClaim).longValue();
+//            } else if (userIdClaim instanceof Long) {
+//                id =  (Long) userIdClaim;
+//            }
+//
+//            return null;
+//        } catch (JwtException | IllegalArgumentException e) {
+//            return null;
+//        }
+//    }
 
     public String extractUsername(String token) {
         try {

@@ -7,8 +7,8 @@ databaseChangeLog:
             tableName: users
             columns:
               - column:
-                  name: personal_id
-                  type: varchar(50)
+                  name: id
+                  type: bigserial
                   constraints:
                     primaryKey: true
                     nullable: false
@@ -85,7 +85,7 @@ databaseChangeLog:
             columns:
               - column:
                   name: user_id
-                  type: varchar(50)
+                  type: bigserial
                   constraints:
                     nullable: false
               - column:
@@ -100,7 +100,7 @@ databaseChangeLog:
             baseTableName: user_roles
             baseColumnNames: user_id
             referencedTableName: users
-            referencedColumnNames: personal_id
+            referencedColumnNames: id
             constraintName: fk_user_roles_user
             onDelete: CASCADE
         - addForeignKeyConstraint:

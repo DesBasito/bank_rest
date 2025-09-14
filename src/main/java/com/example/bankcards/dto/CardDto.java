@@ -18,6 +18,8 @@ import java.time.LocalDate;
  */
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
+@Setter
+@Getter
 @AllArgsConstructor
 @NoArgsConstructor
 public class CardDto {
@@ -28,7 +30,8 @@ public class CardDto {
     String cardNumber;
     @NotNull
     @Schema()
-    User owner;
+    String ownerName;
+    Long ownerId;
     @NotNull
     @Future
     @Schema()

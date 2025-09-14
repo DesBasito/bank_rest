@@ -34,7 +34,7 @@ public class SignUpRequest {
     @Schema(description = "Пароль для пользователя", example = "password")
     @NotBlank
     @Size(max = 11, min = 5)
-    String passwordHash;
+    String password;
     @Schema(description = "Список id ролей пользователя", example = "ADMIN(2) | USER(1)")
     @NotBlank
     Set<Role> roleIds;
