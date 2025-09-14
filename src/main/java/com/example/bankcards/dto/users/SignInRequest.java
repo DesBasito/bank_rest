@@ -18,7 +18,7 @@ import lombok.experimental.FieldDefaults;
 public class SignInRequest {
     @Schema(description = "Номер телефона пользователя", example = "777010203")
     @NotBlank(message = "Номер телефона не может быть пустыми")
-//    @Pattern(regexp = "^\\+7\\([0-9]{3}\\)[0-9]{3}[0-9]{4}$", message = "Неверный формат номера телефона! -> +7(XXX)XXXXXXX")
+    @Pattern(regexp = "^\\+7\\([0-9]{3}\\)[0-9]{3}[0-9]{4}$", message = "Неверный формат номера телефона! -> +7(XXX)XXXXXXX")
     String phoneNumber;
 
     @Schema(description = "Пароль", example = "my_1secret1_password")

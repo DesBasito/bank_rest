@@ -38,4 +38,8 @@ public class SignUpRequest {
     @Schema(description = "Список id ролей пользователя", example = "ADMIN(2) | USER(1)")
     @NotBlank
     Set<Role> roleIds;
+
+    public String getFullName(){
+        return String.format("%s %s %s%n", name, middleName != null ? middleName : "", surname);
+    }
 }

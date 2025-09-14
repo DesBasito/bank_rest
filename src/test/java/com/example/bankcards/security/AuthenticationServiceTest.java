@@ -1,6 +1,5 @@
 package com.example.bankcards.security;
 
-import com.example.bankcards.dto.users.AuthResponse;
 import com.example.bankcards.dto.users.SignInRequest;
 import com.example.bankcards.dto.users.SignUpRequest;
 import com.example.bankcards.entity.RefreshSession;
@@ -41,8 +40,8 @@ class AuthenticationServiceTest {
 
     private final UserRepository repository = Mockito.mock(UserRepository.class);
 
-    @Spy
-    private UserService userService = new UserService(repository);
+    @Mock
+    private UserService userService;
 
     @Mock
     private JwtUtil jwtService;
@@ -76,7 +75,7 @@ class AuthenticationServiceTest {
     @BeforeEach
     void setUp() {
         testUser = User.builder()
-                .id("ID1988767")
+                .id(1L)
                 .firstName("Тест")
                 .lastName("Тестов")
                 .middleName("Тестович")
@@ -91,7 +90,7 @@ class AuthenticationServiceTest {
         signUpRequest.setSurname("Тестов");
         signUpRequest.setMiddleName("Тестович");
         signUpRequest.setPhoneNumber("500123321");
-        signUpRequest.setPasswordHash("qwe");
+        signUpRequest.setPassword("qwe");
         signUpRequest.setRoleIds(Set.of(new Role(2L,"ADMIN","ADMINOV",null)));
 
         signInRequest = new SignInRequest();
@@ -152,7 +151,6 @@ class AuthenticationServiceTest {
     @Test
     @DisplayName("Должен выполнить вход пользователя с автогенерацией fingerprint")
     void shouldSignInUser() {
-        // Настройка моков
         when(userService.userDetailsService()).thenReturn(userDetailsService);
         when(userDetailsService.loadUserByUsername("500123321")).thenReturn(testUser);
         when(jwtService.generateToken(testUser)).thenReturn("accessToken123");
@@ -161,14 +159,14 @@ class AuthenticationServiceTest {
         when(deviceFingerprintService.generateFingerprint(any(HttpServletRequest.class)))
                 .thenReturn("auto-generated-fingerprint-123");
 
-        AuthResponse result = authenticationService.signIn(signInRequest, mockResponse, mockRequest);
+        String result = authenticationService.signIn(signInRequest, mockResponse, mockRequest);
 
-        assertThat(result.getAccessToken()).isEqualTo("accessToken123");
+        assertThat(result).isEqualTo("accessToken123");
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
         verify(deviceFingerprintService).generateFingerprint(mockRequest);
         verify(refreshSessionRepository).save(any(RefreshSession.class));
 
-        // Проверяем, что кука установлена
+
         Cookie[] cookies = mockResponse.getCookies();
         assertThat(cookies).hasSize(1);
         assertThat(cookies[0].getName()).isEqualTo("refreshToken");
@@ -207,9 +205,9 @@ class AuthenticationServiceTest {
                 .thenReturn("auto-generated-fingerprint");
         when(jwtService.generateToken(testUser)).thenReturn("newAccessToken123");
 
-        AuthResponse result = authenticationService.refreshToken(testRefreshToken, mockResponse, mockRequest);
+        String result = authenticationService.refreshToken(testRefreshToken, mockResponse, mockRequest);
 
-        assertThat(result.getAccessToken()).isEqualTo("newAccessToken123");
+        assertThat(result).isEqualTo("newAccessToken123");
         verify(refreshSessionRepository).findByRefreshToken(testRefreshToken);
         verify(refreshSessionRepository).save(any(RefreshSession.class));
         verify(refreshSessionRepository).deleteByRefreshToken(testRefreshToken);
@@ -377,7 +375,6 @@ class AuthenticationServiceTest {
 
         authenticationService.signIn(signInRequest, mockResponse, mockRequest);
 
-        // Проверяем, что сервис вызывался ровно один раз с правильным запросом
         verify(deviceFingerprintService, Mockito.times(1)).generateFingerprint(mockRequest);
     }
 }

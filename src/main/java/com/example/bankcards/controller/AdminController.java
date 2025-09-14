@@ -1,7 +1,7 @@
 package com.example.bankcards.controller;
 
-import com.example.bankcards.dto.UserDto;
 import com.example.bankcards.dto.users.SignUpRequest;
+import com.example.bankcards.dto.users.UserDto;
 import com.example.bankcards.service.CardService;
 import com.example.bankcards.service.TransactionService;
 import com.example.bankcards.service.UserService;
@@ -76,7 +76,7 @@ public class AdminController {
 
         UserDto createdUser = userService.createUser(userDto, password);
 
-        return ResponseEntity.ok("Пользователь "+userDto.getFullName()+" создан");
+        return ResponseEntity.ok("Пользователь " + userDto.getFullName() + " создан");
     }
 
 
@@ -88,7 +88,7 @@ public class AdminController {
 
         UserDto user = userService.toggleUserStatus(id);
 
-        String message = user.getIsActive() ? "Пользователь активирован: "+user.getFullName() : "Пользователь "+user.getFullName()+" заблокирован";
+        String message = user.getIsActive() ? "Пользователь активирован: " + user.getFullName() : "Пользователь " + user.getFullName() + " заблокирован";
 
         return ResponseEntity.ok(message);
     }
@@ -109,7 +109,6 @@ public class AdminController {
             @Parameter(description = "ID пользователя") @PathVariable Long id) {
 
         userService.deleteUser(id);
-
-        return ResponseEntity.ok("Пользователь удален"));
+        return ResponseEntity.ok("Пользователь удален");
     }
 }

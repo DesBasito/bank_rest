@@ -1,6 +1,5 @@
 package com.example.bankcards.security;
 
-import com.example.bankcards.dto.users.AuthResponse;
 import com.example.bankcards.dto.users.SignInRequest;
 import com.example.bankcards.dto.users.SignUpRequest;
 import com.example.bankcards.entity.RefreshSession;
@@ -49,7 +48,7 @@ public class AuthenticationService {
                 .lastName(request.getSurname())
                 .middleName(request.getMiddleName())
                 .phoneNumber(request.getPhoneNumber())
-                .password(passwordEncoder.encode(request.getPasswordHash()))
+                .password(passwordEncoder.encode(request.getPassword()))
                 .enabled(true)
                 .roles(request.getRoleIds()
                         .stream()
@@ -66,33 +65,30 @@ public class AuthenticationService {
     /**
      * Авторизация пользователя с автоматической генерацией fingerprint
      */
-    public AuthResponse signIn(SignInRequest signInRequest, HttpServletResponse response, HttpServletRequest request) {
+    public String signIn(SignInRequest signInRequest, HttpServletResponse response, HttpServletRequest request) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 signInRequest.getPhoneNumber(),
                 signInRequest.getPassword()
         ));
 
         UserDetails user = userService
-                .userDetailsService()
                 .loadUserByUsername(signInRequest.getPhoneNumber());
 
         String access = jwtService.generateToken(user);
 
-        // Очищаем старые сессии если их слишком много
         List<RefreshSession> sessions = refreshSessionRepository.findByUserOrderByCreatedAtAsc((User) user, PageRequest.of(0, 5));
         if (sessions.size() >= 5) {
             refreshSessionRepository.deleteAll(sessions);
         }
 
-        // Автоматически генерируем fingerprint на основе HTTP заголовков
         String deviceFingerprint = deviceFingerprintService.generateFingerprint(request);
 
         generateRefreshToken((User) user, deviceFingerprint, request, response);
-        return new AuthResponse(access);
+        return access;
     }
 
     @Transactional
-    public AuthResponse refreshToken(UUID oldToken, HttpServletResponse response, HttpServletRequest request) {
+    public String refreshToken(UUID oldToken, HttpServletResponse response, HttpServletRequest request) {
         try {
             if (oldToken == null) {
                 throw new IllegalArgumentException("Old token is null");
@@ -100,14 +96,13 @@ public class AuthenticationService {
             RefreshSession session = refreshSessionByRefreshToken(oldToken);
             User user = session.getUser();
 
-            // Проверяем fingerprint (для обновления токена используем тот же fingerprint)
             String deviceFingerprint = deviceFingerprintService.generateFingerprint(request);
             validateRefreshToken(session, deviceFingerprint);
 
             generateRefreshToken(user, deviceFingerprint, request, response);
             refreshSessionRepository.deleteByRefreshToken(oldToken);
             String accessToken = jwtService.generateToken(user);
-            return new AuthResponse(accessToken);
+            return accessToken;
 
         } catch (NoSuchElementException | IllegalArgumentException e) {
             clearRefreshTokenCookie(response);
@@ -145,12 +140,9 @@ public class AuthenticationService {
     }
 
     private void validateRefreshToken(RefreshSession session, String currentFingerprint) {
-        // Для refresh token можем быть менее строгими к fingerprint
-        // так как устройство может изменить некоторые параметры
         if (session.getExpiresIn() < System.currentTimeMillis() / 1000) {
             throw new IllegalArgumentException("Refresh token expired");
         }
-        // Можно добавить дополнительные проверки IP или User-Agent при необходимости
     }
 
     private void clearRefreshTokenCookie(HttpServletResponse response) {

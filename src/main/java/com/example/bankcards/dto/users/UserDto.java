@@ -1,11 +1,10 @@
-package com.example.bankcards.dto;
+package com.example.bankcards.dto.users;
 
+import com.example.bankcards.dto.CardDto;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.io.Serializable;
-import java.time.Instant;
 import java.util.List;
 
 /**
@@ -30,6 +29,6 @@ public class UserDto {
     List<CardDto> cards;
 
     public String getFullName(){
-        return String.format("%s %s%n", firstName, lastName);
+        return String.format("%s %s %s%n", firstName, middleName != null ? middleName : "", lastName);
     }
 }

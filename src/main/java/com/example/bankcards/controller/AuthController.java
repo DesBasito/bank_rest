@@ -1,6 +1,5 @@
 package com.example.bankcards.controller;
 
-import com.example.bankcards.dto.users.AuthResponse;
 import com.example.bankcards.dto.users.SignInRequest;
 import com.example.bankcards.dto.users.SignUpRequest;
 import com.example.bankcards.security.AuthenticationService;
@@ -38,7 +37,7 @@ public class AuthController {
     @Operation(summary = "Авторизация пользователя")
     @ApiResponse(description = "Возвращает токен после авторизации, рефреш устанавливает в куку")
     @PostMapping("/sign-in")
-    public ResponseEntity<AuthResponse> signIn(@io.swagger.v3.oas.annotations.parameters.RequestBody
+    public ResponseEntity<String> signIn(@io.swagger.v3.oas.annotations.parameters.RequestBody
                              @RequestBody @Valid SignInRequest signInRequest,
                                                HttpServletResponse response,
                                                HttpServletRequest request) {
@@ -48,7 +47,7 @@ public class AuthController {
     @Operation(summary = "Обновления access токена для JWT")
     @ApiResponse(description = "Возвращает новый обновленный токен, рефреш устанавливает в куку")
     @PostMapping("/refresh")
-    public ResponseEntity<AuthResponse> refreshToken(@CookieValue("refreshToken") UUID refreshToken,
+    public ResponseEntity<String> refreshToken(@CookieValue("refreshToken") UUID refreshToken,
                                                      HttpServletResponse response,
                                                      HttpServletRequest request) {
             return ResponseEntity.ok(authenticationService.refreshToken(refreshToken, response, request));
