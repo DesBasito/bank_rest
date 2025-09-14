@@ -2,7 +2,7 @@ package com.example.bankcards.dto.mappers;
 
 import com.example.bankcards.dto.CardDto;
 import com.example.bankcards.entity.Card;
-import com.example.bankcards.entity.enums.CardStatus;
+import com.example.bankcards.enums.CardStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

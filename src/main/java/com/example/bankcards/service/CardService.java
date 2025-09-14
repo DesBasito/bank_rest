@@ -4,7 +4,7 @@ import com.example.bankcards.dto.CardDto;
 import com.example.bankcards.dto.mappers.CardMapper;
 import com.example.bankcards.entity.Card;
 import com.example.bankcards.entity.User;
-import com.example.bankcards.entity.enums.CardStatus;
+import com.example.bankcards.enums.CardStatus;
 import com.example.bankcards.repositories.CardRepository;
 import com.example.bankcards.repositories.UserRepository;
 import com.example.bankcards.util.EncryptionUtil;
@@ -256,6 +256,21 @@ public class CardService {
         }
     }
 
+    public boolean isCardOwner(Long cardId, String phoneNumber) {
+        try {
+            Card card = cardRepository.findById(cardId)
+                    .orElse(null);
+
+            if (card == null) {
+                return false;
+            }
+
+            return Objects.equals(card.getOwner().getPhoneNumber(), phoneNumber);
+        } catch (Exception e) {
+            log.warn("Ошибка при проверке владельца карты: {}", e.getMessage());
+            return false;
+        }
+    }
 
 
 }

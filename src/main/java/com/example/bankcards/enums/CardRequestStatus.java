@@ -1,4 +1,4 @@
-package com.example.bankcards.entity.enums;
+package com.example.bankcards.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

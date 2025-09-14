@@ -6,7 +6,7 @@ import com.example.bankcards.dto.cardApplication.CardApplicationRequest;
 import com.example.bankcards.dto.mappers.CardApplicationMapper;
 import com.example.bankcards.entity.CardApplication;
 import com.example.bankcards.entity.User;
-import com.example.bankcards.entity.enums.CardRequestStatus;
+import com.example.bankcards.enums.CardRequestStatus;
 import com.example.bankcards.repositories.CardApplicationRepository;
 import com.example.bankcards.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
