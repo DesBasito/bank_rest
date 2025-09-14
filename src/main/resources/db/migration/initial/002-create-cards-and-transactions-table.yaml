@@ -7,6 +7,7 @@ databaseChangeLog:
             sql: "
             CREATE TYPE card_status AS ENUM ('ACTIVE', 'BLOCKED', 'EXPIRED');
             CREATE TYPE transaction_status AS ENUM ('SUCCESS', 'CANCELLED', 'REFUNDED');
+            CREATE TYPE card_type AS ENUM ('DEBIT', 'CREDIT', 'VIRTUAL', 'PREPAID');
             "
   - changeSet:
       id: 005-create-cards-table
@@ -41,6 +42,11 @@ databaseChangeLog:
                   name: status
                   type: card_status
                   defaultValue: 'ACTIVE'
+                  constraints:
+                    nullable: false
+              - column:
+                  name: type
+                  type: card_type
                   constraints:
                     nullable: false
               - column:

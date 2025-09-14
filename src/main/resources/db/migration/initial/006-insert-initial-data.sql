@@ -27,13 +27,13 @@ VALUES (1, 2),
        (5, 1),
        (6, 1);
 
-INSERT INTO cards (card_number, owner_id, expiry_date, status, balance)
-VALUES ('4111111111111111', 2, DATE '2026-12-31', 'ACTIVE'::card_status, 15000.50),
-       ('4222222222222222', 2, DATE '2027-06-30', 'ACTIVE'::card_status, 5000.00),
-       ('4333333333333333', 3, DATE '2026-08-31', 'ACTIVE'::card_status, 25000.75),
-       ('4444444444444444', 4, DATE '2025-12-31', 'EXPIRED'::card_status, 0.00),
-       ('4555555555555555', 4, DATE '2027-03-31', 'ACTIVE'::card_status, 12500.25),
-       ('4666666666666666', 6, DATE '2026-11-30', 'BLOCKED'::card_status, 3000.00);
+INSERT INTO cards (card_number, owner_id, expiry_date, type, status, balance)
+VALUES ('4111111111111111', 2, DATE '2026-12-31','DEBIT'::card_type, 'ACTIVE'::card_status, 15000.50),
+       ('4222222222222222', 2, DATE '2027-06-30','DEBIT'::card_type, 'ACTIVE'::card_status, 5000.00),
+       ('4333333333333333', 3, DATE '2026-08-31','DEBIT'::card_type, 'ACTIVE'::card_status, 25000.75),
+       ('4444444444444444', 4, DATE '2025-12-31','DEBIT'::card_type, 'EXPIRED'::card_status, 0.00),
+       ('4555555555555555', 4, DATE '2027-03-31','DEBIT'::card_type, 'ACTIVE'::card_status, 12500.25),
+       ('4666666666666666', 6, DATE '2026-11-30','DEBIT'::card_type, 'BLOCKED'::card_status, 3000.00);
 
 INSERT INTO transactions (from_card_id, to_card_id, amount, description, status, processed_at)
 VALUES (1, 3, 1000.00, 'Перевод другу', 'SUCCESS'::transaction_status, NOW() - INTERVAL '2 days'),
