@@ -2,6 +2,8 @@ package com.example.bankcards.controller;
 
 import com.example.bankcards.dto.UserDto;
 import com.example.bankcards.dto.users.SignUpRequest;
+import com.example.bankcards.service.CardService;
+import com.example.bankcards.service.TransactionService;
 import com.example.bankcards.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -30,6 +32,8 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Управление пользователями", description = "Административные операции с пользователями")
 public class AdminController {
     private final UserService userService;
+    private final TransactionService transactionService;
+    private final CardService cardService;
 
     @Operation(summary = "Получить всех пользователей",
             description = "Получение списка всех пользователей с пагинацией")

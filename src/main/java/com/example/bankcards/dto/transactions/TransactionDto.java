@@ -1,10 +1,9 @@
-package com.example.bankcards.dto;
+package com.example.bankcards.dto.transactions;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.Instant;
 
