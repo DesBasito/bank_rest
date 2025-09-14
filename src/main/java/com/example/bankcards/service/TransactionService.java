@@ -8,18 +8,15 @@ import com.example.bankcards.entity.Transaction;
 import com.example.bankcards.enums.TransactionStatus;
 import com.example.bankcards.repositories.CardRepository;
 import com.example.bankcards.repositories.TransactionRepo;
-import com.example.bankcards.util.AuthenticatedUserUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.NoSuchElementException;
 import java.util.Objects;

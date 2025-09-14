@@ -100,8 +100,6 @@ databaseChangeLog:
               - column:
                   name: from_card_id
                   type: bigint
-                  constraints:
-                    nullable: false
               - column:
                   name: to_card_id
                   type: bigint

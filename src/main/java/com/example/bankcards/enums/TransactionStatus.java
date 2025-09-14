@@ -5,8 +5,8 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public enum TransactionStatus {
-    SUCCESS("Успешно"), CANCELLED("Отклонена самим заказчиком"), REFUNDED("Возвращено");
+public enum TransactionStatus implements EnumInterface{
+    SUCCESS("Успешно"), CANCELLED("Отклонена самим заказчиком 💅🏿"), REFUNDED("Возвращено");
 
     private final String description;
 }

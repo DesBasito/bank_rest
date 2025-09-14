@@ -1,6 +1,7 @@
 package com.example.bankcards.dto.users;
 
 import com.example.bankcards.entity.Role;
+import com.example.bankcards.validations.ValidRoleType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -37,9 +38,10 @@ public class SignUpRequest {
     String password;
     @Schema(description = "Список id ролей пользователя", example = "ADMIN(2) | USER(1)")
     @NotBlank
-    Set<Role> roleIds;
+    @ValidRoleType
+    Set<Long> roleIds;
 
-    public String getFullName(){
+    public String getFullName() {
         return String.format("%s %s %s%n", name, middleName != null ? middleName : "", surname);
     }
 }

@@ -2,13 +2,11 @@ package com.example.bankcards.validations;
 
 import com.example.bankcards.dto.transactions.TransferRequest;
 import com.example.bankcards.entity.Card;
-import com.example.bankcards.entity.User;
 import com.example.bankcards.repositories.CardRepository;
+import com.example.bankcards.util.AuthenticatedUserUtil;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.math.BigDecimal;
 import java.util.NoSuchElementException;
@@ -17,6 +15,7 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class TransferValidator implements ConstraintValidator<ValidTransactionRequest, TransferRequest> {
     private final CardRepository repository;
+    private final AuthenticatedUserUtil userUtil;
     private static final String FROM_CARD_ID =  "fromCardId";
     private static final String TO_CARD_ID =  "toCardId";
 
@@ -47,14 +46,14 @@ public class TransferValidator implements ConstraintValidator<ValidTransactionRe
                 .orElseThrow(() -> new NoSuchElementException("Карта получателя не найдена"));
 
 
-        if (!Objects.equals(fromCard.getOwner().getId(), getCurrentUserId())) {
+        if (!Objects.equals(fromCard.getOwner().getId(), userUtil.getCurrentUserId())) {
             context.buildConstraintViolationWithTemplate("Карта отправителя не принадлежит пользователю")
                     .addPropertyNode(FROM_CARD_ID)
                     .addConstraintViolation();
             isValid = false;
         }
 
-        if (!Objects.equals(toCard.getOwner().getId(), getCurrentUserId())) {
+        if (!Objects.equals(toCard.getOwner().getId(), userUtil.getCurrentUserId())) {
             context.buildConstraintViolationWithTemplate("Карта получателя не принадлежит пользователю")
                     .addPropertyNode(TO_CARD_ID)
                     .addConstraintViolation();
@@ -73,14 +72,6 @@ public class TransferValidator implements ConstraintValidator<ValidTransactionRe
         }
 
         return isValid;
-    }
-
-    private Long getCurrentUserId() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.getPrincipal() instanceof User user) {
-            return user.getId();
-        }
-        return null;
     }
 
     private void validateCardForTransaction(Card card, String cardRole) {

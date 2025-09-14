@@ -1,8 +1,6 @@
 package com.example.bankcards.aspects;
 
 import com.example.bankcards.dto.CardDto;
-import com.example.bankcards.entity.Card;
-import com.example.bankcards.entity.User;
 import com.example.bankcards.util.AuthenticatedUserUtil;
 import com.example.bankcards.util.EncryptionUtil;
 import lombok.RequiredArgsConstructor;
@@ -10,8 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.data.domain.Page;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -22,6 +18,7 @@ import java.util.List;
 @Slf4j
 public class CardMaskingAspect {
     private final EncryptionUtil encryptionUtil;
+    private final AuthenticatedUserUtil userUtil;
 
     @AfterReturning(
             pointcut = "execution(* com.example.bankcards.service.CardService.*(..)) || " +
@@ -63,9 +60,9 @@ public class CardMaskingAspect {
 
     private void maskCardDto(CardDto cardDto) {
         try {
-            String currentUsername = getCurrentUsername();
-            boolean isAdmin = isCurrentUserAdmin();
-            boolean isOwner = isCardOwner(cardDto.getOwnerId(), currentUsername);
+            String currentUsername = userUtil.getCurrentUsername();
+            boolean isAdmin = userUtil.isCurrentUserAdmin();
+            boolean isOwner = userUtil.isCardOwner(cardDto.getOwnerId(), currentUsername);
 
             log.debug("Маскирование карты ID: {}, пользователь: {}, админ: {}, владелец: {}",
                     cardDto.getId(), currentUsername, isAdmin, isOwner);
@@ -85,36 +82,5 @@ public class CardMaskingAspect {
             log.warn("Ошибка при маскировании номера карты: {}", e.getMessage());
             cardDto.setCardNumber("****");
         }
-    }
-
-
-    private String getCurrentUsername() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated() &&
-            !"anonymousUser".equals(authentication.getPrincipal())) {
-            return authentication.getName();
-        }
-        return null;
-    }
-
-    private boolean isCurrentUserAdmin() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.getAuthorities() != null) {
-            return authentication.getAuthorities().stream()
-                    .anyMatch(auth -> "ROLE_ADMIN".equals(auth.getAuthority()));
-        }
-        return false;
-    }
-
-    private boolean isCardOwner(Long cardOwnerId, String username) {
-        if (username == null || cardOwnerId == null) {
-            return false;
-        }
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.getPrincipal() instanceof User user) {
-            return cardOwnerId.equals(user.getId());
-        }
-        return false;
     }
 }

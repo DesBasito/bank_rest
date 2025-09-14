@@ -1,5 +1,6 @@
 package com.example.bankcards.dto.cardApplication;
 
+import com.example.bankcards.validations.ValidCardType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -16,6 +17,7 @@ public class CardApplicationRequest {
 
     @Schema(description = "Тип карты", example = "DEBIT", allowableValues = {"DEBIT", "CREDIT", "VIRTUAL", "PREPAID"})
     @NotBlank(message = "Тип карты обязателен")
+    @ValidCardType
     String cardType;
 
     @Schema(description = "Комментарий к заявке", example = "Основная карта для зарплаты")

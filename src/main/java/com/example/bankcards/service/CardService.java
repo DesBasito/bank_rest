@@ -256,21 +256,5 @@ public class CardService {
         }
     }
 
-    public boolean isCardOwner(Long cardId, String phoneNumber) {
-        try {
-            Card card = cardRepository.findById(cardId)
-                    .orElse(null);
-
-            if (card == null) {
-                return false;
-            }
-
-            return Objects.equals(card.getOwner().getPhoneNumber(), phoneNumber);
-        } catch (Exception e) {
-            log.warn("Ошибка при проверке владельца карты: {}", e.getMessage());
-            return false;
-        }
-    }
-
 
 }

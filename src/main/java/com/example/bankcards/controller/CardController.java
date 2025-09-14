@@ -79,7 +79,7 @@ public class CardController {
                     description = "Нет доступа к карте")
     })
     @GetMapping("/{id}")
-    @PreAuthorize("@cardService.isCardOwner(#id, authentication.name) or hasRole('ADMIN')")
+    @PreAuthorize("@authenticatedUserUtil.isCardOwner(#id, authentication.name) or hasRole('ADMIN')")
     public ResponseEntity<CardDto> getCard(
             @Parameter(description = "ID карты") @PathVariable Long id) {
 
