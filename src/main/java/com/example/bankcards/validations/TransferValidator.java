@@ -24,14 +24,6 @@ public class TransferValidator implements ConstraintValidator<ValidTransactionRe
         boolean isValid = true;
         context.disableDefaultConstraintViolation();
 
-        if (Objects.equals(value.getFromCardId(), value.getToCardId())) {
-            context.buildConstraintViolationWithTemplate("Нельзя перевести средства на ту же карту")
-                    .addPropertyNode(FROM_CARD_ID)
-                    .addPropertyNode(TO_CARD_ID)
-                    .addConstraintViolation();
-            isValid = false;
-        }
-
         if (value.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
             context.buildConstraintViolationWithTemplate("Сумма перевода должна быть положительной")
                     .addPropertyNode("amount")
@@ -64,12 +56,13 @@ public class TransferValidator implements ConstraintValidator<ValidTransactionRe
         validateCardForTransaction(fromCard, "отправителя");
         validateCardForTransaction(toCard, "получателя");
 
-        if (fromCard.getBalance().compareTo(value.getAmount()) < 0) {
-            context.buildConstraintViolationWithTemplate("Недостаточно средств на карте отправителя")
-                    .addPropertyNode(FROM_CARD_ID)
-                    .addConstraintViolation();
-            isValid = false;
-        }
+        if (!value.getFromCardId().equals(value.getToCardId()) && fromCard.getBalance().compareTo(value.getAmount()) < 0) {
+                context.buildConstraintViolationWithTemplate("Недостаточно средств на карте отправителя")
+                        .addPropertyNode(FROM_CARD_ID)
+                        .addConstraintViolation();
+                isValid = false;
+            }
+
 
         return isValid;
     }

@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -29,47 +30,15 @@ public class UserService implements UserDetailsService {
 
     private final UserRepository repository;
     private final CardRepository cardRepository;
-    private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
 
 
     @Transactional
     public User create(User user) {
+        log.info("Создание нового пользователя: {}", user.getFullName());
         user.setCreatedAt(Instant.now());
         user.setUpdatedAt(Instant.now());
         return repository.save(user);
-    }
-
-    @Transactional
-    public UserDto createUser(SignUpRequest request, String password) {
-        log.info("Создание нового пользователя: {}", request.getPhoneNumber());
-
-        if (repository.findByPhoneNumber(request.getPhoneNumber()).isPresent()) {
-            throw new IllegalArgumentException("Пользователь с таким номером телефона уже существует");
-        }
-
-        User user = User.builder()
-                .firstName(request.getName())
-                .lastName(request.getSurname())
-                .middleName(request.getMiddleName())
-                .phoneNumber(request.getPhoneNumber())
-                .password(passwordEncoder.encode(password))
-                .enabled(true)
-                .roles(request.getRoleIds()
-                        .stream()
-                        .map(e -> {
-                            Role r = new Role();
-                            r.setId(e);
-                            return r;
-                        }).collect(Collectors.toSet()))
-                .createdAt(Instant.now())
-                .updatedAt(Instant.now())
-                .build();
-
-        User savedUser = repository.save(user);
-        log.info("Пользователь {} успешно создан с ID: {}", savedUser.getFullName(), savedUser.getId());
-
-        return userMapper.toDto(savedUser);
     }
 
     @Transactional(readOnly = true)

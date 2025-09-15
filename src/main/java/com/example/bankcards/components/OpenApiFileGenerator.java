@@ -1,12 +1,10 @@
-package com.example.bankcards.util;
+package com.example.bankcards.components;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -31,7 +29,7 @@ public class OpenApiFileGenerator implements CommandLineRunner {
 
     private void generateOpenApiFile() {
         try {
-            Thread.sleep(5000);
+            Thread.sleep(3000);
             String openApiUrl = String.format("http://localhost:%s%s/v3/api-docs", this.port, this.contextPath);
 
             log.info("🔄 Generation of OpenAPI specification...");

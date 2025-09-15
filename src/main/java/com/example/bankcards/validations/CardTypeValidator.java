@@ -7,7 +7,7 @@ import jakarta.validation.ConstraintValidatorContext;
 
 import static com.example.bankcards.enums.EnumInterface.getEnumDescription;
 
-public class CardTypeValidator implements ConstraintValidator<ValidTransactionRequest, String> {
+public class CardTypeValidator implements ConstraintValidator<ValidCardType, String> {
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
         boolean isValid = true;
@@ -16,7 +16,6 @@ public class CardTypeValidator implements ConstraintValidator<ValidTransactionRe
 
         if (!EnumInterface.isExists(CardType.class, value)) {
             context.buildConstraintViolationWithTemplate(getEnumDescription(CardType.class))
-                    .addPropertyNode("cardType")
                     .addConstraintViolation();
             isValid = false;
         }

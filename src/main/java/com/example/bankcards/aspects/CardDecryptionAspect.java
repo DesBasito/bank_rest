@@ -22,6 +22,7 @@ public class CardDecryptionAspect {
     @AfterReturning(
             pointcut = "execution(* com.example.bankcards.repositories.CardRepository.findById(..)) || " +
                        "execution(* com.example.bankcards.repositories.CardRepository.findByCardNumber(..)) || " +
+                       "execution(* com.example.bankcards.repositories.CardRepository.save(..)) || " +
                        "execution(* com.example.bankcards.repositories.CardRepository.getReferenceById(..))",
             returning = "result")
     public void decryptSingleCard(Object result) {

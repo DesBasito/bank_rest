@@ -7,6 +7,9 @@ import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -19,6 +22,7 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "transactions")
+@EntityListeners(AuditingEntityListener.class)
 public class Transaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -52,9 +56,11 @@ public class Transaction {
     @NotNull
     @ColumnDefault("now()")
     @Column(name = "created_at", nullable = false)
+    @CreatedDate
     Instant createdAt;
 
     @Column(name = "processed_at")
+    @LastModifiedDate
     Instant processedAt;
 
     @Column(name = "error_message", length = 1000)

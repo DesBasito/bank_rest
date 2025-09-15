@@ -1,6 +1,5 @@
 package com.example.bankcards.validations;
 
-import com.example.bankcards.dto.cards.CardBlockRequestCreateDto;
 import com.example.bankcards.entity.Card;
 import com.example.bankcards.enums.CardStatus;
 import com.example.bankcards.repositories.CardBlockRequestRepository;

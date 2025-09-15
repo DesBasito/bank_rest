@@ -8,6 +8,7 @@ import com.example.bankcards.entity.Transaction;
 import com.example.bankcards.enums.TransactionStatus;
 import com.example.bankcards.repositories.CardRepository;
 import com.example.bankcards.repositories.TransactionRepo;
+import com.example.bankcards.util.AuthenticatedUserUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -27,7 +28,9 @@ import java.util.Objects;
 public class TransactionService {
 
     private final TransactionRepo transactionRepository;
+    private final AuthenticatedUserUtil userUtil;
     private final CardRepository cardRepository;
+    private final CardService cardService;
     private final TransactionMapper transactionMapper;
 
     @Transactional
@@ -37,25 +40,25 @@ public class TransactionService {
 
         Card toCard = cardRepository.findById(request.getToCardId())
                 .orElseThrow(() -> new NoSuchElementException("Карта получателя не найдена"));
+        String description = request.getToCardId().equals(request.getFromCardId())
+                ? "Пополнение счета через терминал"
+                : request.getDescription();
         try {
             Transaction transaction = Transaction.builder()
                     .fromCard(fromCard)
                     .toCard(toCard)
                     .amount(request.getAmount())
-                    .description(request.getDescription())
+                    .description(description)
                     .status(TransactionStatus.SUCCESS.name())
-                    .createdAt(Instant.now())
-                    .processedAt(Instant.now())
                     .build();
-
-            fromCard.setBalance(fromCard.getBalance().subtract(request.getAmount()));
-            toCard.setBalance(toCard.getBalance().add(request.getAmount()));
+            if (!request.getFromCardId().equals(request.getToCardId())) {
+                cardService.deductBalance(request.getFromCardId(), request.getAmount());
+            }
+            cardService.addBalance(request.getToCardId(), request.getAmount());
 
             log.info("Перевод пользователя {} с карты {} на карту {} на сумму {}",
                     fromCard.getOwner().getFullName(), request.getFromCardId(), request.getToCardId(), request.getAmount());
 
-            cardRepository.save(fromCard);
-            cardRepository.save(toCard);
             Transaction savedTransaction = transactionRepository.save(transaction);
 
             log.info("Перевод выполнен успешно. ID транзакции: {}", savedTransaction.getId());
@@ -102,7 +105,9 @@ public class TransactionService {
     }
 
     @Transactional(readOnly = true)
-    public TransactionDto getTransactionById(Long transactionId, Long userId) {
+    public TransactionDto getTransactionById(Long transactionId) {
+        Long userId = userUtil.getCurrentUserId();
+
         log.info("Получение транзакции {} для пользователя {}", transactionId, userId);
 
         Transaction transaction = transactionRepository.findById(transactionId)

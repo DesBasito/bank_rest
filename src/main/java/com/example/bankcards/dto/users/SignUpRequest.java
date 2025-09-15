@@ -1,5 +1,6 @@
 package com.example.bankcards.dto.users;
 
+import com.example.bankcards.validations.ValidPhoneNumber;
 import com.example.bankcards.validations.ValidRoleType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -30,15 +31,12 @@ public class SignUpRequest {
     @Schema(description = "Мобильный телефон пользователя", example = "+7(900)1234567")
     @NotBlank
     @Pattern(regexp = "^\\+7\\([0-9]{3}\\)[0-9]{3}[0-9]{4}$", message = "Номер телефона должен быть в формате +7(XXX)XXXXXXX")
+    @ValidPhoneNumber
     String phoneNumber;
     @Schema(description = "Пароль для пользователя", example = "password")
     @NotBlank
     @Size(max = 11, min = 5)
     String password;
-    @Schema(description = "Список id ролей пользователя", example = "ADMIN(2) | USER(1)")
-    @NotBlank
-    @ValidRoleType
-    Set<Long> roleIds;
 
     public String getFullName() {
         return String.format("%s %s %s%n", name, middleName != null ? middleName : "", surname);

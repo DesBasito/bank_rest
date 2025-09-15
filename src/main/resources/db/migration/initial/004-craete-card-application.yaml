@@ -1,15 +1,6 @@
 databaseChangeLog:
   - changeSet:
-      id: 010-create-card-application-status-enum
-      author: abu
-      changes:
-        - sql:
-            sql: "
-            CREATE TYPE card_application_status AS ENUM ('PENDING', 'APPROVED', 'REJECTED', 'CANCELLED');
-            "
-
-  - changeSet:
-      id: 011-create-card-applications-table
+      id: 08-create-card-applications-table
       author: abu
       changes:
         - createTable:
@@ -28,7 +19,7 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: type
-                  type: card_type
+                  type: varchar(55)
                   constraints:
                     nullable: false
               - column:
@@ -36,7 +27,7 @@ databaseChangeLog:
                   type: varchar(255)
               - column:
                   name: status
-                  type: card_application_status
+                  type: varchar(55)
                   defaultValue: 'PENDING'
                   constraints:
                     nullable: false
@@ -60,7 +51,7 @@ databaseChangeLog:
             onDelete: CASCADE
 
   - changeSet:
-      id: 012-create-card-applications-indexes
+      id: 09-create-card-applications-indexes
       author: abu
       changes:
         - createIndex:

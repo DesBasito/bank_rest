@@ -1,6 +1,6 @@
 databaseChangeLog:
   - changeSet:
-      id: 013-create-card-block-requests-table
+      id: 011-create-card-block-requests-table
       author: abu
       changes:
         - createTable:
@@ -29,7 +29,7 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: status
-                  type: card_application_status
+                  type: varchar(55)
                   defaultValue: 'PENDING'
                   constraints:
                     nullable: false
@@ -71,7 +71,7 @@ databaseChangeLog:
             onDelete: SET NULL
 
   - changeSet:
-      id: 015-create-card-block-requests-indexes
+      id: 012-create-card-block-requests-indexes
       author: abu
       changes:
         - createIndex:

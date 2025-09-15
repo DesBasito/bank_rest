@@ -96,7 +96,7 @@ public class EncryptionUtil {
             // Рассчитываем контрольную цифру по алгоритму Луна
             int checkDigit = calculateLuhnCheckDigit(cardNumber.toString());
             cardNumber.append(checkDigit);
-        }while (Objects.equals(Boolean.FALSE,!isValidCardNumber(cardNumber.toString())));
+        }while (Objects.equals(Boolean.FALSE, isValidCardNumber(cardNumber.toString())));
 
         String encryptedCardNumber = encryptCardNumber(cardNumber.toString());
 

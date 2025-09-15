@@ -91,7 +91,6 @@ class AuthenticationServiceTest {
         signUpRequest.setMiddleName("Тестович");
         signUpRequest.setPhoneNumber("500123321");
         signUpRequest.setPassword("qwe");
-        signUpRequest.setRoleIds(Set.of(new Role(2L,"ADMIN","ADMINOV",null)));
 
         signInRequest = new SignInRequest();
         signInRequest.setPhoneNumber("500123321");

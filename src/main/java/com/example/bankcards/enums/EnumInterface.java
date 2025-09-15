@@ -13,7 +13,7 @@ public interface EnumInterface {
 
     static <E extends Enum<E> & EnumInterface> Boolean isExists(Class<E> enumClass,String value) {
         for (E type : enumClass.getEnumConstants()) {
-            if (type.getDescription().equalsIgnoreCase(value.strip())) {
+            if (type.name().equalsIgnoreCase(value.strip())) {
                 return true;
             }
         }

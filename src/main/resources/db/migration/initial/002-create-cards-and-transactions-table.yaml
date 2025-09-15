@@ -1,16 +1,6 @@
 databaseChangeLog:
   - changeSet:
-      id: 004-create-card-status-enum
-      author: abu
-      changes:
-        - sql:
-            sql: "
-            CREATE TYPE card_status AS ENUM ('ACTIVE', 'BLOCKED', 'EXPIRED');
-            CREATE TYPE transaction_status AS ENUM ('SUCCESS', 'CANCELLED', 'REFUNDED');
-            CREATE TYPE card_type AS ENUM ('DEBIT', 'CREDIT', 'VIRTUAL', 'PREPAID');
-            "
-  - changeSet:
-      id: 005-create-cards-table
+      id: 004-create-cards-table
       author: abu
       changes:
         - createTable:
@@ -40,13 +30,13 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: status
-                  type: card_status
+                  type: varchar(55)
                   defaultValue: 'ACTIVE'
                   constraints:
                     nullable: false
               - column:
                   name: type
-                  type: card_type
+                  type: varchar(55)
                   constraints:
                     nullable: false
               - column:
@@ -85,7 +75,7 @@ databaseChangeLog:
               - column:
                   name: status
   - changeSet:
-      id: 006-create-transactions-table
+      id: 005-create-transactions-table
       author: abu
       changes:
         - createTable:
@@ -115,7 +105,7 @@ databaseChangeLog:
                   type: varchar(500)
               - column:
                   name: status
-                  type: transaction_status
+                  type: varchar(55)
                   defaultValue: 'SUCCESS'
                   constraints:
                     nullable: false

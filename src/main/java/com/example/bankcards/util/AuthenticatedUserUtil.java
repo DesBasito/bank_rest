@@ -69,4 +69,11 @@ public class AuthenticatedUserUtil {
         return null;
     }
 
+    public User getCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof User user) {
+            return user;
+        }
+        throw new AccessDeniedException("У вас нету доступа");
+    }
 }

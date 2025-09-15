@@ -7,6 +7,9 @@ import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -20,6 +23,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(name = "cards")
+@EntityListeners(AuditingEntityListener.class)
 public class Card {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,7 +44,7 @@ public class Card {
     @Column(name = "expiry_date", nullable = false)
     LocalDate expiryDate;
 
-    @Column(name = "type", columnDefinition = "card_type not null")
+    @Column(name = "type")
     private String type;
 
     @NotNull
@@ -56,10 +60,12 @@ public class Card {
     @NotNull
     @ColumnDefault("now()")
     @Column(name = "created_at", nullable = false)
+    @CreatedDate
     Instant createdAt;
 
     @ColumnDefault("now()")
     @Column(name = "updated_at")
+    @LastModifiedDate
     Instant updatedAt;
 
 }

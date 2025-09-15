@@ -1,9 +1,9 @@
 package com.example.bankcards.security;
 
+import com.example.bankcards.dto.mappers.UserMapper;
 import com.example.bankcards.dto.users.SignInRequest;
 import com.example.bankcards.dto.users.SignUpRequest;
 import com.example.bankcards.entity.RefreshSession;
-import com.example.bankcards.entity.Role;
 import com.example.bankcards.entity.User;
 import com.example.bankcards.repositories.RefreshSessionRepository;
 import com.example.bankcards.service.UserService;
@@ -17,14 +17,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,30 +30,15 @@ public class AuthenticationService {
     private final UserService userService;
     private final JwtUtil jwtService;
     private final DeviceFingerprintService deviceFingerprintService;
-    private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final RefreshSessionRepository refreshSessionRepository;
 
     private static final String REFRESH_TOKEN_COOKIE_NAME = "refreshToken";
     private static final String REFRESH_TOKEN_PATH = "/api/auth";
+    private final UserMapper userMapper;
 
     public void signUp(SignUpRequest request) {
-        User user = User.builder()
-                .firstName(request.getName())
-                .lastName(request.getSurname())
-                .middleName(request.getMiddleName())
-                .phoneNumber(request.getPhoneNumber())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .enabled(true)
-                .roles(request.getRoleIds()
-                        .stream()
-                        .map(e -> {
-                            Role r = new Role();
-                            r.setId(e);
-                            return r;
-                        }).collect(Collectors.toSet()))
-                .build();
-
+        User user = userMapper.toEntity(request);
         userService.create(user);
     }
 

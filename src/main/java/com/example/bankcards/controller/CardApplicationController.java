@@ -43,6 +43,7 @@ public class CardApplicationController {
                     description = "Заявка создана",
                     content = @Content(schema = @Schema(implementation = CardApplicationDto.class)))
     })
+    @PreAuthorize("hasRole('USER')")
     @PostMapping
     public ResponseEntity<CardApplicationDto> createApplication(
             @Valid @RequestBody CardApplicationRequest request,
@@ -61,6 +62,7 @@ public class CardApplicationController {
     @Operation(summary = "Получить мои заявки",
             description = "Получение списка заявок текущего пользователя")
     @GetMapping("/my")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Page<CardApplicationDto>> getMyApplications(
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
             Pageable pageable,
@@ -76,6 +78,7 @@ public class CardApplicationController {
     @Operation(summary = "Отменить заявку",
             description = "Отмена заявки пользователем (только в статусе PENDING)")
     @PostMapping("/{id}/cancel")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<CardApplicationDto> cancelApplication(
             @Parameter(description = "ID заявки") @PathVariable Long id,
             HttpServletRequest request) {

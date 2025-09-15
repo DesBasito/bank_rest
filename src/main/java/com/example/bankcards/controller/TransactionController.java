@@ -90,11 +90,8 @@ public class TransactionController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<TransactionDto> getTransaction(
-            @Parameter(description = "ID транзакции") @PathVariable Long id,
-            HttpServletRequest request) {
-
-        Long userId = userUtil.getUserIdFromToken(request);
-        TransactionDto transaction = transactionService.getTransactionById(id, userId);
+            @Parameter(description = "ID транзакции") @PathVariable Long id) {
+        TransactionDto transaction = transactionService.getTransactionById(id);
         return ResponseEntity.ok(transaction);
     }
 }

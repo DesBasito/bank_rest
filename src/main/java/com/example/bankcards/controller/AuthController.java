@@ -27,7 +27,6 @@ public class AuthController {
     @Operation(summary = "Регистрация пользователя")
     @ApiResponse(description = "Возвращает токен после регистрации")
     @PostMapping("/sign-up")
-    @PreAuthorize("hasRole=('ADMIN')")
     public HttpStatus signUp(@io.swagger.v3.oas.annotations.parameters.RequestBody
             @RequestBody @Valid SignUpRequest request) {
         authenticationService.signUp(request);

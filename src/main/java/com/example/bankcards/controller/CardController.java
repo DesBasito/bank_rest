@@ -1,5 +1,6 @@
 package com.example.bankcards.controller;
 
+import com.example.bankcards.dto.cardApplication.CardApplicationDto;
 import com.example.bankcards.dto.cards.CardDto;
 import com.example.bankcards.service.CardService;
 import com.example.bankcards.util.AuthenticatedUserUtil;
@@ -12,16 +13,14 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -30,6 +29,7 @@ import java.util.List;
 @SecurityRequirement(name = "Bearer Authentication")
 @RequiredArgsConstructor
 @Tag(name = "Карты", description = "Операции управления банковскими картами")
+@Slf4j
 public class CardController {
     private final AuthenticatedUserUtil userUtil;
     private final CardService cardService;
@@ -52,6 +52,38 @@ public class CardController {
 
         Page<CardDto> cards = cardService.getUserCards(userId, pageable);
         return ResponseEntity.ok(cards);
+    }
+
+    @Operation(summary = "Получить все карты",
+            description = "Получение списка карт с пагинацией")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Список карт получен",
+                    content = @Content(schema = @Schema(implementation = Page.class)))
+    })
+    @GetMapping("/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Page<CardDto>> getAllCards(
+            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC)
+            Pageable pageable) {
+
+        Page<CardDto> cards = cardService.getAllCards(pageable);
+        return ResponseEntity.ok(cards);
+    }
+
+    @Operation(summary = "Отклонить заявку (админ)",
+            description = "Отклонение заявки администратором")
+    @PostMapping("/{id}/unblock")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<CardDto> unblockCard(
+            @Parameter(description = "ID карты") @PathVariable Long id) {
+
+        log.info("Администратор разблокирует карту с ID: {}", id);
+
+        CardDto application = cardService.unblockCard(id);
+
+        return ResponseEntity.ok(application);
     }
 
     @Operation(summary = "Получить активные карты пользователя",

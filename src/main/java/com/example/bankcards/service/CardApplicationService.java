@@ -141,5 +141,4 @@ public class CardApplicationService {
         return cardApplicationRepository.findByStatus(status, pageable)
                 .map(mapper::mapToDto);
     }
-    
 }

@@ -36,20 +36,16 @@ public class CardBlockRequestService {
     private final CardService cardService;
 
     public CardBlockRequestDto createBlockRequest(Long userId, CardBlockRequestCreateDto request) {
-        log.info("Создание запроса на блокировку карты с ID: {} пользователем с ID: {}",
-                request.getCardId(), userId);
+        log.info("Создание запроса на блокировку карты с ID: {}",
+                request.getCardId());
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("Пользователь не найден"));
         Card card = cardRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("Пользователь не найден"));
 
         CardBlockRequest blockRequest = CardBlockRequest.builder()
                 .card(card)
-                .user(user)
                 .reason(request.getReason())
                 .status(CardRequestStatus.PENDING.name())
-                .createdAt(Instant.now())
                 .build();
 
         CardBlockRequest savedRequest = cardBlockRequestRepository.save(blockRequest);
@@ -128,8 +124,8 @@ public class CardBlockRequestService {
         if (!CardRequestStatus.PENDING.name().equals(blockRequest.getStatus())) {
             throw new IllegalArgumentException("Можно отменить только запросы в статусе 'Ожидание'");
         }
-
-        cardBlockRequestRepository.delete(blockRequest);
+        blockRequest.setStatus(CardRequestStatus.CANCELLED.name());
+        cardBlockRequestRepository.save(blockRequest);
 
         log.info("Запрос на блокировку отменен пользователем");
     }

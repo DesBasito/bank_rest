@@ -1,6 +1,6 @@
 databaseChangeLog:
   - changeSet:
-      id: 008-create-refresh-sessions-table
+      id: 006-create-refresh-sessions-table
       author: abu
       changes:
         - createTable:
@@ -55,7 +55,7 @@ databaseChangeLog:
             constraintName: fk_refresh_sessions_user
             onDelete: CASCADE
   - changeSet:
-      id: 009-create-refresh-sessions-indexes
+      id: 007-create-refresh-sessions-indexes
       author: abu
       changes:
         - createIndex:

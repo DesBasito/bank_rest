@@ -22,7 +22,7 @@ public class CardMaskingAspect {
 
     @AfterReturning(
             pointcut = "execution(* com.example.bankcards.service.CardService.*(..)) || " +
-                       "execution(* com.example.bankcards.service.CardApplicationService.approveCardApplication(..))",
+                       "execution(* com.example.bankcards.dto.mappers.CardMapper.*(..))",
             returning = "result")
     public void maskSingleCardDto(Object result) {
         if (result instanceof CardDto cardDto) {
