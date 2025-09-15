@@ -1,6 +1,5 @@
 package com.example.bankcards.dto.users;
 
-import com.example.bankcards.entity.Role;
 import com.example.bankcards.validations.ValidRoleType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;

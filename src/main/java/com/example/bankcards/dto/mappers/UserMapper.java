@@ -1,6 +1,6 @@
 package com.example.bankcards.dto.mappers;
 
-import com.example.bankcards.dto.CardDto;
+import com.example.bankcards.dto.cards.CardDto;
 import com.example.bankcards.dto.users.UserDto;
 import com.example.bankcards.entity.User;
 import lombok.RequiredArgsConstructor;

@@ -1,6 +1,6 @@
 package com.example.bankcards.aspects;
 
-import com.example.bankcards.dto.CardDto;
+import com.example.bankcards.dto.cards.CardDto;
 import com.example.bankcards.util.AuthenticatedUserUtil;
 import com.example.bankcards.util.EncryptionUtil;
 import lombok.RequiredArgsConstructor;

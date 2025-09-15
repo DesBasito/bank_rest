@@ -8,9 +8,6 @@ import lombok.experimental.FieldDefaults;
 import java.math.BigDecimal;
 import java.time.Instant;
 
-/**
- * DTO for {@link com.example.bankcards.entity.Transaction}
- */
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
 @Getter

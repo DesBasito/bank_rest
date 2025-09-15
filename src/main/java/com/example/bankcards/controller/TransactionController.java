@@ -68,6 +68,7 @@ public class TransactionController {
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
             Pageable pageable,
             HttpServletRequest request) {
+
         Long userId = userUtil.getUserIdFromToken(request);
         Page<TransactionDto> transactions = transactionService.getUserTransactions(userId, cardId, pageable);
         return ResponseEntity.ok(transactions);
@@ -93,9 +94,7 @@ public class TransactionController {
             HttpServletRequest request) {
 
         Long userId = userUtil.getUserIdFromToken(request);
-
         TransactionDto transaction = transactionService.getTransactionById(id, userId);
-
         return ResponseEntity.ok(transaction);
     }
 }

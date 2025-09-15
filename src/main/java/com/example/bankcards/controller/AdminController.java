@@ -2,8 +2,6 @@ package com.example.bankcards.controller;
 
 import com.example.bankcards.dto.users.SignUpRequest;
 import com.example.bankcards.dto.users.UserDto;
-import com.example.bankcards.service.CardService;
-import com.example.bankcards.service.TransactionService;
 import com.example.bankcards.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

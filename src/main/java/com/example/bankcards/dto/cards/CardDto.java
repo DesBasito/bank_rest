@@ -1,6 +1,5 @@
-package com.example.bankcards.dto;
+package com.example.bankcards.dto.cards;
 
-import com.example.bankcards.entity.User;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
@@ -13,9 +12,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 
-/**
- * DTO for {@link com.example.bankcards.entity.Card}
- */
+
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
 @Setter
@@ -39,6 +36,7 @@ public class CardDto {
     @NotNull
     @Schema()
     String status;
+    String type;
     @NotNull
     @PositiveOrZero(message = "Баланс не может быть меньше 0!")
     @Schema()

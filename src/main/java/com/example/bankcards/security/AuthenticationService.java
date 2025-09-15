@@ -39,9 +39,6 @@ public class AuthenticationService {
     private static final String REFRESH_TOKEN_COOKIE_NAME = "refreshToken";
     private static final String REFRESH_TOKEN_PATH = "/api/auth";
 
-    /**
-     * Регистрация пользователя
-     */
     public void signUp(SignUpRequest request) {
         User user = User.builder()
                 .firstName(request.getName())
@@ -54,7 +51,7 @@ public class AuthenticationService {
                         .stream()
                         .map(e -> {
                             Role r = new Role();
-                            r.setId(e.getId());
+                            r.setId(e);
                             return r;
                         }).collect(Collectors.toSet()))
                 .build();
@@ -62,9 +59,6 @@ public class AuthenticationService {
         userService.create(user);
     }
 
-    /**
-     * Авторизация пользователя с автоматической генерацией fingerprint
-     */
     public String signIn(SignInRequest signInRequest, HttpServletResponse response, HttpServletRequest request) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 signInRequest.getPhoneNumber(),
@@ -101,8 +95,7 @@ public class AuthenticationService {
 
             generateRefreshToken(user, deviceFingerprint, request, response);
             refreshSessionRepository.deleteByRefreshToken(oldToken);
-            String accessToken = jwtService.generateToken(user);
-            return accessToken;
+            return jwtService.generateToken(user);
 
         } catch (NoSuchElementException | IllegalArgumentException e) {
             clearRefreshTokenCookie(response);
@@ -139,9 +132,12 @@ public class AuthenticationService {
                 .orElseThrow(() -> new NoSuchElementException("Refresh token not found"));
     }
 
-    private void validateRefreshToken(RefreshSession session, String currentFingerprint) {
+    private void validateRefreshToken(RefreshSession session, String fingerprint) {
+        if(!session.getFingerprint().equals(fingerprint)){
+            throw new IllegalArgumentException("Fingerprint mismatch");
+        }
         if (session.getExpiresIn() < System.currentTimeMillis() / 1000) {
-            throw new IllegalArgumentException("Refresh token expired");
+            throw new IllegalArgumentException("Refresh expired");
         }
     }
 

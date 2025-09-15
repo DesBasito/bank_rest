@@ -59,8 +59,7 @@ public class UserService implements UserDetailsService {
                         .stream()
                         .map(e -> {
                             Role r = new Role();
-                            r.setId(e.getId());
-                            r.setName(e.getName());
+                            r.setId(e);
                             return r;
                         }).collect(Collectors.toSet()))
                 .createdAt(Instant.now())

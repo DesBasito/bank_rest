@@ -1,15 +1,12 @@
 package com.example.bankcards.dto.users;
 
-import com.example.bankcards.dto.CardDto;
+import com.example.bankcards.dto.cards.CardDto;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.util.List;
 
-/**
- * DTO for {@link com.example.bankcards.entity.User}
- */
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
 @Getter@Setter

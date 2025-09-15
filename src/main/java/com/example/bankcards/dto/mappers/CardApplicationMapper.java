@@ -2,6 +2,10 @@ package com.example.bankcards.dto.mappers;
 
 import com.example.bankcards.dto.cardApplication.CardApplicationDto;
 import com.example.bankcards.entity.CardApplication;
+import com.example.bankcards.enums.CardRequestStatus;
+import com.example.bankcards.enums.CardStatus;
+import com.example.bankcards.enums.CardType;
+import com.example.bankcards.enums.EnumInterface;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -15,9 +19,9 @@ public class CardApplicationMapper {
                         application.getUser().getFirstName(),
                         application.getUser().getLastName(),
                         application.getUser().getMiddleName()))
-                .cardType(application.getCardType())
+                .cardType(EnumInterface.toDescription(CardType.class,application.getCardType()))
                 .comment(application.getComment())
-                .status(application.getStatus())
+                .status(EnumInterface.toDescription(CardRequestStatus.class,application.getStatus()))
                 .createdAt(application.getCreatedAt())
                 .processedAt(application.getProcessedAt())
                 .build();
