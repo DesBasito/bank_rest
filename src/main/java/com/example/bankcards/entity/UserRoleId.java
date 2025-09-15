@@ -19,7 +19,7 @@ public class UserRoleId implements Serializable {
     private static final long serialVersionUID = 798504902068411700L;
     @NotNull
     @Column(name = "user_id", nullable = false)
-    private String userId;
+    private Long userId;
 
     @NotNull
     @Column(name = "role_id", nullable = false)
