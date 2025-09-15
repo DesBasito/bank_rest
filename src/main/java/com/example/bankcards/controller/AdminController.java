@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Управление пользователями", description = "Административные операции с пользователями")
 public class AdminController {
     private final UserService userService;
+
     @Operation(summary = "Получить всех пользователей",
             description = "Получение списка всех пользователей с пагинацией")
     @GetMapping
