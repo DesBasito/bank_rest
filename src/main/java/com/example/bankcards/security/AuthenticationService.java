@@ -4,6 +4,7 @@ import com.example.bankcards.dto.mappers.UserMapper;
 import com.example.bankcards.dto.users.SignInRequest;
 import com.example.bankcards.dto.users.SignUpRequest;
 import com.example.bankcards.entity.RefreshSession;
+import com.example.bankcards.entity.Role;
 import com.example.bankcards.entity.User;
 import com.example.bankcards.repositories.RefreshSessionRepository;
 import com.example.bankcards.service.UserService;
@@ -17,8 +18,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -29,18 +32,26 @@ import java.util.UUID;
 public class AuthenticationService {
     private final UserService userService;
     private final JwtUtil jwtService;
-    private final DeviceFingerprintService deviceFingerprintService;
+    private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final RefreshSessionRepository refreshSessionRepository;
-
     private static final String REFRESH_TOKEN_COOKIE_NAME = "refreshToken";
     private static final String REFRESH_TOKEN_PATH = "/api/auth";
-    private final UserMapper userMapper;
 
     public void signUp(SignUpRequest request) {
-        User user = userMapper.toEntity(request);
+        User user = User.builder()
+                .firstName(request.getName())
+                .lastName(request.getSurname())
+                .middleName(request.getMiddleName())
+                .phoneNumber(request.getPhoneNumber())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .role(new Role().setId(1L))
+                .enabled(true)
+                .build();
+
         userService.create(user);
     }
+
 
     public String signIn(SignInRequest signInRequest, HttpServletResponse response, HttpServletRequest request) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
@@ -49,44 +60,38 @@ public class AuthenticationService {
         ));
 
         UserDetails user = userService
+                .userDetailsService()
                 .loadUserByUsername(signInRequest.getPhoneNumber());
 
-        String access = jwtService.generateToken(user);
-
+        String access =  jwtService.generateToken(user);
         List<RefreshSession> sessions = refreshSessionRepository.findByUserOrderByCreatedAtAsc((User) user, PageRequest.of(0, 5));
         if (sessions.size() >= 5) {
             refreshSessionRepository.deleteAll(sessions);
         }
-
-        String deviceFingerprint = deviceFingerprintService.generateFingerprint(request);
-
-        generateRefreshToken((User) user, deviceFingerprint, request, response);
+        generateRefreshToken((User) user, request.getHeader("Fingerprint"), request, response);
         return access;
     }
 
     @Transactional
     public String refreshToken(UUID oldToken, HttpServletResponse response, HttpServletRequest request) {
         try {
-            if (oldToken == null) {
+            if (oldToken == null){
                 throw new IllegalArgumentException("Old token is null");
             }
             RefreshSession session = refreshSessionByRefreshToken(oldToken);
             User user = session.getUser();
-
-            String deviceFingerprint = deviceFingerprintService.generateFingerprint(request);
-            validateRefreshToken(session, deviceFingerprint);
-
-            generateRefreshToken(user, deviceFingerprint, request, response);
+            validateRefreshToken(session, request.getHeader("Fingerprint"));
+            generateRefreshToken(user, request.getHeader("Fingerprint"), request, response);
             refreshSessionRepository.deleteByRefreshToken(oldToken);
             return jwtService.generateToken(user);
-
         } catch (NoSuchElementException | IllegalArgumentException e) {
             clearRefreshTokenCookie(response);
             throw e;
         }
+
     }
 
-    private void setRefreshToken(UUID refreshToken, HttpServletResponse response) {
+    private void setRefreshToken(UUID refreshToken, HttpServletResponse response){
         Cookie cookie = new Cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken.toString());
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
@@ -102,8 +107,7 @@ public class AuthenticationService {
                 .user(user)
                 .fingerprint(fingerprint)
                 .ua(request.getHeader("User-Agent"))
-                .ip(getClientIpAddress(request))
-                .createdAt(Instant.now())
+                .ip(request.getRemoteAddr())
                 .expiresIn(System.currentTimeMillis() / 1000 + (60 * 60 * 24 * 30))
                 .build();
         refreshSessionRepository.save(refreshSession);
@@ -131,19 +135,5 @@ public class AuthenticationService {
         cookie.setPath(REFRESH_TOKEN_PATH);
         cookie.setMaxAge(0);
         response.addCookie(cookie);
-    }
-
-    private String getClientIpAddress(HttpServletRequest request) {
-        String xForwardedFor = request.getHeader("X-Forwarded-For");
-        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-            return xForwardedFor.split(",")[0].trim();
-        }
-
-        String xRealIP = request.getHeader("X-Real-IP");
-        if (xRealIP != null && !xRealIP.isEmpty()) {
-            return xRealIP;
-        }
-
-        return request.getRemoteAddr();
     }
 }

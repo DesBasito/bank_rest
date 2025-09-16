@@ -1,12 +1,10 @@
 package com.example.bankcards.service;
 
-import com.example.bankcards.dto.users.UserDto;
 import com.example.bankcards.dto.mappers.UserMapper;
-import com.example.bankcards.dto.users.SignUpRequest;
-import com.example.bankcards.entity.Role;
+import com.example.bankcards.dto.users.UserDto;
 import com.example.bankcards.entity.User;
-import com.example.bankcards.repositories.UserRepository;
 import com.example.bankcards.repositories.CardRepository;
+import com.example.bankcards.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -14,14 +12,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.NoSuchElementException;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service

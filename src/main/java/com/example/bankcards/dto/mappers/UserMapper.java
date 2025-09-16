@@ -42,7 +42,7 @@ public class UserMapper {
                 .lastName(request.getSurname())
                 .middleName(request.getMiddleName())
                 .phoneNumber(request.getPhoneNumber())
-                .roles(Set.of(new Role().setId(1L)))
+                .role(new Role().setId(1L))
                 .password(encoder.encode(request.getPassword()))
                 .enabled(true)
                 .build();

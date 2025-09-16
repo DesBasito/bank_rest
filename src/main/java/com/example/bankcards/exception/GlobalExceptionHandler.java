@@ -10,6 +10,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,10 +26,10 @@ import java.util.NoSuchElementException;
 public class GlobalExceptionHandler {
     private final ErrorService errorService;
 
-    @ExceptionHandler(MultipartException.class)
-    public ResponseEntity<ErrorResponseBody> handleMultipartException(MultipartException e) {
-        log.error("Multipart request processing error: {}", e.getMessage());
-        return new ResponseEntity<>(errorService.makeResponse(e), HttpStatus.BAD_REQUEST);
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<ErrorResponseBody> handleUserNameNotFoundException(UsernameNotFoundException e) {
+        log.error("Authorize request processing error: {}", e.getMessage());
+        return new ResponseEntity<>(errorService.makeResponse(e), HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler(IllegalStateException.class)

@@ -1,31 +1,19 @@
-INSERT INTO roles (name, description)
-VALUES ('USER', 'Обычный пользователь'),
-       ('ADMIN', 'Администратор системы');
+INSERT INTO roles (id, name, description)
+VALUES (1, 'USER', 'Обычный пользователь'),
+       (2, 'ADMIN', 'Администратор системы');
 
-INSERT INTO users (phone_number, password, first_name, middle_name, last_name, enabled)
-VALUES ('+7(900)1234567', '$2a$12$WB2YUbFcCN0tm44SBcKUjua9yiFBsfB3vW02IjuwzY7HGtlQIKzy2', 'Администратор', 'admin',
-        'Системы', true),
-       ('+7(900)1234568', '$2a$12$WB2YUbFcCN0tm44SBcKUjua9yiFBsfB3vW02IjuwzY7HGtlQIKzy2', 'Иван', 'Иванович', 'Иванов',
-        true),
-       ('+7(900)1234569', '$2a$12$WB2YUbFcCN0tm44SBcKUjua9yiFBsfB3vW02IjuwzY7HGtlQIKzy2', 'Петр', 'Петрович', 'Петров',
-        true),
-       ('+7(900)1234570', '$2a$12$WB2YUbFcCN0tm44SBcKUjua9yiFBsfB3vW02IjuwzY7HGtlQIKzy2', 'Мария', 'Александровна',
-        'Сидорова',
-        true),
-       ('+7(900)1234571', '$2a$12$WB2YUbFcCN0tm44SBcKUjua9yiFBsfB3vW02IjuwzY7HGtlQIKzy2', 'Анна', 'Сергеевна',
-        'Кузнецова',
-        false),
-       ('+7(900)1234572', '$2a$12$WB2YUbFcCN0tm44SBcKUjua9yiFBsfB3vW02IjuwzY7HGtlQIKzy2', 'Дмитрий', 'Владимирович',
-        'Смирнов',
-        true);
+SELECT setval('roles_id_seq', 2, true);
 
-INSERT INTO user_roles (user_id, role_id)
-VALUES (1, 2),
-       (2, 1),
-       (3, 1),
-       (4, 1),
-       (5, 1),
-       (6, 1);
+-- Пароль у всех - qwe
+INSERT INTO users (id,role_id, phone_number, password, first_name, middle_name, last_name, enabled)
+VALUES (1, 2,'+7(900)1234567', '$2a$12$WB2YUbFcCN0tm44SBcKUjua9yiFBsfB3vW02IjuwzY7HGtlQIKzy2', 'Администратор', 'Главный', 'Системы', true),
+       (2, 1,'+7(900)1234568', '$2a$12$WB2YUbFcCN0tm44SBcKUjua9yiFBsfB3vW02IjuwzY7HGtlQIKzy2', 'Иван', 'Иванович', 'Иванов', true),
+       (3, 1,'+7(900)1234569', '$2a$12$WB2YUbFcCN0tm44SBcKUjua9yiFBsfB3vW02IjuwzY7HGtlQIKzy2', 'Петр', 'Петрович', 'Петров', true),
+       (4, 1,'+7(900)1234570', '$2a$12$WB2YUbFcCN0tm44SBcKUjua9yiFBsfB3vW02IjuwzY7HGtlQIKzy2', 'Мария', 'Александровна', 'Сидорова', true),
+       (5, 1,'+7(900)1234571', '$2a$12$WB2YUbFcCN0tm44SBcKUjua9yiFBsfB3vW02IjuwzY7HGtlQIKzy2', 'Анна', 'Сергеевна', 'Кузнецова', false),
+       (6, 1,'+7(900)1234572', '$2a$12$WB2YUbFcCN0tm44SBcKUjua9yiFBsfB3vW02IjuwzY7HGtlQIKzy2', 'Дмитрий', 'Владимирович', 'Смирнов', true);
+
+SELECT setval('users_id_seq', 6, true);
 
 INSERT INTO cards (card_number, owner_id, expiry_date, type, status, balance)
 VALUES ('4111111111111111', 2, DATE '2026-12-31','DEBIT', 'ACTIVE', 15000.50),

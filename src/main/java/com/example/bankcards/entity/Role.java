@@ -1,11 +1,11 @@
 package com.example.bankcards.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
-import org.hibernate.annotations.ManyToAny;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -32,11 +32,6 @@ public class Role {
     @Column(name = "description")
     String description;
 
-    @ManyToAny
-    @JoinTable(name = "user_roles",
-            joinColumns = @JoinColumn(name = "role_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id"))
-    @Builder.Default
+    @OneToMany(mappedBy = "role", fetch = FetchType.LAZY)
     Set<User> users = new LinkedHashSet<>();
-
 }

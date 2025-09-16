@@ -1,5 +1,7 @@
 package com.example.bankcards.security;
 
+import java.io.IOException;
+
 import com.example.bankcards.service.UserService;
 import com.example.bankcards.util.JwtUtil;
 import io.jsonwebtoken.JwtException;
@@ -18,8 +20,6 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
-
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -35,7 +35,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
-
         String authHeader = request.getHeader(HEADER_NAME);
         if (StringUtils.isEmpty(authHeader) || !StringUtils.startsWith(authHeader, BEARER_PREFIX)) {
             filterChain.doFilter(request, response);
@@ -53,6 +52,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (StringUtils.isNotEmpty(username) &&
                 SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = userService
+                        .userDetailsService()
                         .loadUserByUsername(username);
 
                 if (Boolean.TRUE.equals(jwtService.validateToken(jwt, userDetails))) {

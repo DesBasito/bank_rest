@@ -1,6 +1,8 @@
 package com.example.bankcards.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.UnexpectedTypeException;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -9,14 +11,13 @@ import org.hibernate.annotations.ColumnDefault;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.Instant;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Getter
@@ -76,25 +77,16 @@ public class User implements UserDetails {
     @Builder.Default
     Set<Card> cards = new LinkedHashSet<>();
 
-    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "user_roles",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id")
-    )
-    @Builder.Default
-    Set<Role> roles = new LinkedHashSet<>();
+    @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    Role role;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        if (roles == null || roles.isEmpty()) {
-            return Set.of();
+        if (role == null) {
+            throw new AccessDeniedException("У пользователя отсутствует роль в системе!");
         }
 
-        return roles.stream()
-                .filter(role -> role != null && role.getName() != null)
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
-                .collect(Collectors.toSet());
+        return List.of(new SimpleGrantedAuthority("ROLE_"+role.getName()));
     }
 
     public String getFullName() {

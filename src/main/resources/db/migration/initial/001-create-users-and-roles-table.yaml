@@ -1,6 +1,28 @@
 databaseChangeLog:
-  - changeSet:
-      id: 001-create-users-table
+   - changeSet:
+        id: 001-create-roles-table
+        author: developer
+        changes:
+          - createTable:
+              tableName: roles
+              columns:
+                - column:
+                    name: id
+                    type: bigserial
+                    constraints:
+                      primaryKey: true
+                      nullable: false
+                - column:
+                    name: name
+                    type: varchar(50)
+                    constraints:
+                      nullable: false
+                      unique: true
+                - column:
+                    name: description
+                    type: varchar(255)
+   - changeSet:
+      id: 002-create-users-table
       author: abu
       changes:
         - createTable:
@@ -54,59 +76,12 @@ databaseChangeLog:
                   name: updated_at
                   type: timestamp
                   defaultValueComputed: CURRENT_TIMESTAMP
-  - changeSet:
-      id: 002-create-roles-table
-      author: developer
-      changes:
-        - createTable:
-            tableName: roles
-            columns:
-              - column:
-                  name: id
-                  type: bigserial
-                  constraints:
-                    primaryKey: true
-                    nullable: false
-              - column:
-                  name: name
-                  type: varchar(50)
-                  constraints:
-                    nullable: false
-                    unique: true
-              - column:
-                  name: description
-                  type: varchar(255)
-  - changeSet:
-      id: 003-create-user-roles-table
-      author: developer
-      changes:
-        - createTable:
-            tableName: user_roles
-            columns:
-              - column:
-                  name: user_id
-                  type: bigserial
-                  constraints:
-                    nullable: false
               - column:
                   name: role_id
                   type: bigint
                   constraints:
+                    foreignKeyName: fk_contacts_role_id
+                    references: roles(id)
                     nullable: false
-        - addPrimaryKey:
-            tableName: user_roles
-            columnNames: user_id, role_id
-        - addForeignKeyConstraint:
-            baseTableName: user_roles
-            baseColumnNames: user_id
-            referencedTableName: users
-            referencedColumnNames: id
-            constraintName: fk_user_roles_user
-            onDelete: CASCADE
-        - addForeignKeyConstraint:
-            baseTableName: user_roles
-            baseColumnNames: role_id
-            referencedTableName: roles
-            referencedColumnNames: id
-            constraintName: fk_user_roles_role
-            onDelete: CASCADE
+                    deleteCascade: false
+

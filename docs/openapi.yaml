@@ -117,14 +117,14 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/TransactionDto"
-        "200":
-          description: "Перевод успешно выполнен"
+        "403":
+          description: "Карта не принадлежит пользователю"
           content:
             '*/*':
               schema:
                 $ref: "#/components/schemas/TransactionDto"
-        "403":
-          description: "Карта не принадлежит пользователю"
+        "200":
+          description: "Перевод успешно выполнен"
           content:
             '*/*':
               schema:
@@ -441,14 +441,14 @@ paths:
           type: "integer"
           format: "int64"
       responses:
-        "400":
-          description: "Заявка уже обработана"
+        "200":
+          description: "Заявка одобрена, карта создана"
           content:
             '*/*':
               schema:
                 $ref: "#/components/schemas/CardDto"
-        "200":
-          description: "Заявка одобрена, карта создана"
+        "400":
+          description: "Заявка уже обработана"
           content:
             '*/*':
               schema:
@@ -660,14 +660,14 @@ paths:
           type: "integer"
           format: "int64"
       responses:
-        "200":
-          description: "Информация о транзакции получена"
+        "404":
+          description: "Транзакция не найдена"
           content:
             '*/*':
               schema:
                 $ref: "#/components/schemas/TransactionDto"
-        "404":
-          description: "Транзакция не найдена"
+        "200":
+          description: "Информация о транзакции получена"
           content:
             '*/*':
               schema:
@@ -747,6 +747,12 @@ paths:
           type: "integer"
           format: "int64"
       responses:
+        "200":
+          description: "Информация о карте получена"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CardDto"
         "404":
           description: "Карта не найдена"
           content:
@@ -755,12 +761,6 @@ paths:
                 $ref: "#/components/schemas/CardDto"
         "403":
           description: "Нет доступа к карте"
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/CardDto"
-        "200":
-          description: "Информация о карте получена"
           content:
             '*/*':
               schema:
@@ -1308,9 +1308,9 @@ components:
       properties:
         empty:
           type: "boolean"
-        sorted:
-          type: "boolean"
         unsorted:
+          type: "boolean"
+        sorted:
           type: "boolean"
     UserDto:
       required:
