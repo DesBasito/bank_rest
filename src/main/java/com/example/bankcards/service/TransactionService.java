@@ -93,7 +93,7 @@ public class TransactionService {
             transactions = transactionRepository.findByCardId(cardId, pageable);
             Card card = cardRepository.findById(cardId)
                     .orElseThrow(() -> new NoSuchElementException("Карта не найдена"));
-
+            System.out.println(card.getCardNumber());
             if (!Objects.equals(card.getOwner().getId(), userId)) {
                 throw new IllegalArgumentException("Карта не принадлежит пользователю");
             }
@@ -132,4 +132,7 @@ public class TransactionService {
     }
 
 
+    public Page<TransactionDto> getAllTransactions(Pageable pageable) {
+        return transactionRepository.findAll(pageable).map(transactionMapper::toDto);
+    }
 }

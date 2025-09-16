@@ -28,7 +28,7 @@ public class AuthController {
     @ApiResponse(description = "Возвращает токен после регистрации")
     @PostMapping("/sign-up")
     public HttpStatus signUp(@io.swagger.v3.oas.annotations.parameters.RequestBody
-            @RequestBody @Valid SignUpRequest request) {
+                             @RequestBody @Valid SignUpRequest request) {
         authenticationService.signUp(request);
         return HttpStatus.CREATED;
     }
@@ -37,18 +37,18 @@ public class AuthController {
     @ApiResponse(description = "Возвращает токен после авторизации, рефреш устанавливает в куку")
     @PostMapping("/sign-in")
     public ResponseEntity<String> signIn(@io.swagger.v3.oas.annotations.parameters.RequestBody
-                             @RequestBody @Valid SignInRequest signInRequest,
-                                               HttpServletResponse response,
-                                               HttpServletRequest request) {
-        return ResponseEntity.ok(authenticationService.signIn(signInRequest,response, request));
+                                         @RequestBody @Valid SignInRequest signInRequest,
+                                         HttpServletResponse response,
+                                         HttpServletRequest request) {
+        return ResponseEntity.ok(authenticationService.signIn(signInRequest, response, request));
     }
 
     @Operation(summary = "Обновления access токена для JWT")
     @ApiResponse(description = "Возвращает новый обновленный токен, рефреш устанавливает в куку")
     @PostMapping("/refresh")
     public ResponseEntity<String> refreshToken(@CookieValue("refreshToken") UUID refreshToken,
-                                                     HttpServletResponse response,
-                                                     HttpServletRequest request) {
-            return ResponseEntity.ok(authenticationService.refreshToken(refreshToken, response, request));
+                                               HttpServletResponse response,
+                                               HttpServletRequest request) {
+        return ResponseEntity.ok(authenticationService.refreshToken(refreshToken, response, request));
     }
 }

@@ -94,4 +94,14 @@ public class TransactionController {
         TransactionDto transaction = transactionService.getTransactionById(id);
         return ResponseEntity.ok(transaction);
     }
+
+    @Operation(summary = "Получить историю транзакций",
+            description = "Получение истории транзакций")
+    @GetMapping("/all")
+    public ResponseEntity<Page<TransactionDto>> getAllTransactions(
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
+            Pageable pageable) {
+        Page<TransactionDto> transactions = transactionService.getAllTransactions(pageable);
+        return ResponseEntity.ok(transactions);
+    }
 }

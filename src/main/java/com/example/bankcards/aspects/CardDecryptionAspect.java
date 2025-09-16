@@ -1,6 +1,7 @@
 package com.example.bankcards.aspects;
 
 import com.example.bankcards.entity.Card;
+import com.example.bankcards.entity.CardBlockRequest;
 import com.example.bankcards.util.EncryptionUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,52 +21,32 @@ public class CardDecryptionAspect {
     private final EncryptionUtil encryptionUtil;
 
     @AfterReturning(
-            pointcut = "execution(* com.example.bankcards.repositories.CardRepository.findById(..)) || " +
-                       "execution(* com.example.bankcards.repositories.CardRepository.findByCardNumber(..)) || " +
-                       "execution(* com.example.bankcards.repositories.CardRepository.save(..)) || " +
-                       "execution(* com.example.bankcards.repositories.CardRepository.getReferenceById(..))",
+            pointcut = "execution(* com.example.bankcards.repositories.CardRepository.*(..)) || " +
+                       "execution(* com.example.bankcards.repositories.CardBlockRequestRepository.*(..))",
             returning = "result")
-    public void decryptSingleCard(Object result) {
-        if (result instanceof Optional<?> optional) {
-            optional.ifPresent(item -> {
-                if (item instanceof Card card) {
-                    decryptCardNumber(card);
-                }
-            });
-        } else if (result instanceof Card card) {
-            decryptCardNumber(card);
-        }
-    }
-
-    @AfterReturning(
-            pointcut = "execution(* com.example.bankcards.repositories.CardRepository.findActiveCardsByOwnerId(..)) || " +
-                       "execution(* com.example.bankcards.repositories.CardRepository.findExpiredCards(..)) || " +
-                       "execution(* com.example.bankcards.repositories.CardRepository.findAll())",
-            returning = "result")
-    public void decryptCardList(Object result) {
+    public void decryptCardData(Object result) {
         if (result instanceof List<?> list) {
-            list.forEach(item -> {
-                if (item instanceof Card card) {
-                    decryptCardNumber(card);
-                }
-            });
+            decryptCardsInList(list);
+        } else if (result instanceof Page<?> page) {
+            decryptCardsInList(page.getContent());
+        } else if (result instanceof Optional<?> optional && optional.isPresent()) {
+            decryptCardsInObject(optional.get());
+        } else if (result != null) {
+            decryptCardsInObject(result);
         }
     }
 
-    @AfterReturning(
-            pointcut = "execution(* com.example.bankcards.repositories.CardRepository.findByOwnerId(..)) || " +
-                       "execution(* com.example.bankcards.repositories.CardRepository.findByOwnerNameContaining(..))",
-            returning = "result")
-    public void decryptCardPage(Object result) {
-        if (result instanceof Page<?> page) {
-            page.getContent().forEach(item -> {
-                if (item instanceof Card card) {
-                    decryptCardNumber(card);
-                }
-            });
-        }
+    private void decryptCardsInList(List<?> list) {
+        list.forEach(this::decryptCardsInObject);
     }
 
+    private void decryptCardsInObject(Object item) {
+        if (item instanceof Card card) {
+            decryptCardNumber(card);
+        } else if (item instanceof CardBlockRequest request) {
+            decryptCardNumber(request.getCard());
+        }
+    }
 
     private void decryptCardNumber(Card card) {
         try {

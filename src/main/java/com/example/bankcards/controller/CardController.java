@@ -1,6 +1,5 @@
 package com.example.bankcards.controller;
 
-import com.example.bankcards.dto.cardApplication.CardApplicationDto;
 import com.example.bankcards.dto.cards.CardDto;
 import com.example.bankcards.service.CardService;
 import com.example.bankcards.util.AuthenticatedUserUtil;
@@ -43,6 +42,7 @@ public class CardController {
                     content = @Content(schema = @Schema(implementation = Page.class)))
     })
     @GetMapping("/my")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Page<CardDto>> getMyCards(
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
             Pageable pageable,
@@ -89,6 +89,7 @@ public class CardController {
     @Operation(summary = "Получить активные карты пользователя",
             description = "Получение списка активных карт текущего пользователя")
     @GetMapping("/my/active")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<CardDto>> getMyActiveCards(HttpServletRequest request) {
         Long userId = userUtil.getUserIdFromToken(request);
 

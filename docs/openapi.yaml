@@ -58,13 +58,6 @@ paths:
       summary: "Создать пользователя"
       description: "Создание нового пользователя администратором"
       operationId: "createUser"
-      parameters:
-      - name: "password"
-        in: "query"
-        description: "Пароль пользователя"
-        required: true
-        schema:
-          type: "string"
       requestBody:
         content:
           application/json:
@@ -124,14 +117,14 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/TransactionDto"
-        "200":
-          description: "Перевод успешно выполнен"
+        "403":
+          description: "Карта не принадлежит пользователю"
           content:
             '*/*':
               schema:
                 $ref: "#/components/schemas/TransactionDto"
-        "403":
-          description: "Карта не принадлежит пользователю"
+        "200":
+          description: "Перевод успешно выполнен"
           content:
             '*/*':
               schema:
@@ -716,6 +709,28 @@ paths:
                 $ref: "#/components/schemas/PageTransactionDto"
       security:
       - Bearer Authentication: []
+  /transactions/all:
+    get:
+      tags:
+      - "Транзакции"
+      summary: "Получить историю транзакций"
+      description: "Получение истории транзакций"
+      operationId: "getAllTransactions"
+      parameters:
+      - name: "pageable"
+        in: "query"
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageTransactionDto"
+      security:
+      - Bearer Authentication: []
   /cards/{id}:
     get:
       tags:
@@ -732,14 +747,14 @@ paths:
           type: "integer"
           format: "int64"
       responses:
-        "200":
-          description: "Информация о карте получена"
+        "404":
+          description: "Карта не найдена"
           content:
             '*/*':
               schema:
                 $ref: "#/components/schemas/CardDto"
-        "404":
-          description: "Карта не найдена"
+        "200":
+          description: "Информация о карте получена"
           content:
             '*/*':
               schema:
@@ -1263,11 +1278,11 @@ components:
           format: "int32"
         sort:
           $ref: "#/components/schemas/SortObject"
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
         numberOfElements:
           type: "integer"
           format: "int32"
-        pageable:
-          $ref: "#/components/schemas/PageableObject"
         empty:
           type: "boolean"
     PageableObject:
@@ -1278,24 +1293,24 @@ components:
           format: "int64"
         sort:
           $ref: "#/components/schemas/SortObject"
+        paged:
+          type: "boolean"
+        unpaged:
+          type: "boolean"
         pageNumber:
           type: "integer"
           format: "int32"
         pageSize:
           type: "integer"
           format: "int32"
-        paged:
-          type: "boolean"
-        unpaged:
-          type: "boolean"
     SortObject:
       type: "object"
       properties:
         empty:
           type: "boolean"
-        sorted:
-          type: "boolean"
         unsorted:
+          type: "boolean"
+        sorted:
           type: "boolean"
     UserDto:
       required:
@@ -1348,11 +1363,11 @@ components:
           format: "int32"
         sort:
           $ref: "#/components/schemas/SortObject"
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
         numberOfElements:
           type: "integer"
           format: "int32"
-        pageable:
-          $ref: "#/components/schemas/PageableObject"
         empty:
           type: "boolean"
     Page:
@@ -1380,11 +1395,11 @@ components:
           format: "int32"
         sort:
           $ref: "#/components/schemas/SortObject"
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
         numberOfElements:
           type: "integer"
           format: "int32"
-        pageable:
-          $ref: "#/components/schemas/PageableObject"
         empty:
           type: "boolean"
     PageCardBlockRequestDto:
@@ -1412,11 +1427,11 @@ components:
           format: "int32"
         sort:
           $ref: "#/components/schemas/SortObject"
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
         numberOfElements:
           type: "integer"
           format: "int32"
-        pageable:
-          $ref: "#/components/schemas/PageableObject"
         empty:
           type: "boolean"
     PageCardApplicationDto:
@@ -1444,11 +1459,11 @@ components:
           format: "int32"
         sort:
           $ref: "#/components/schemas/SortObject"
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
         numberOfElements:
           type: "integer"
           format: "int32"
-        pageable:
-          $ref: "#/components/schemas/PageableObject"
         empty:
           type: "boolean"
   securitySchemes:

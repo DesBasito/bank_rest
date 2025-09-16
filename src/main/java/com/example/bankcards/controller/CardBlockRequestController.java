@@ -11,7 +11,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -51,14 +50,11 @@ public class CardBlockRequestController {
     })
     @PostMapping
     public ResponseEntity<CardBlockRequestDto> createBlockRequest(
-            @Valid @RequestBody CardBlockRequestCreateDto request,
-            HttpServletRequest httpRequest) {
+            @Valid @RequestBody CardBlockRequestCreateDto request) {
 
-        Long userId = userUtil.getUserIdFromToken(httpRequest);
-        String userName = userUtil.getUserNameFromToken(httpRequest);
-
+        Long userId = userUtil.getCurrentUserId();
+        String userName = userUtil.getCurrentUsername();
         log.info("Пользователь {} создает запрос на блокировку карты с ID: {}", userName, request.getCardId());
-
         CardBlockRequestDto blockRequest = cardBlockRequestService.createBlockRequest(userId, request);
 
         return ResponseEntity.ok(blockRequest);
@@ -67,15 +63,13 @@ public class CardBlockRequestController {
     @Operation(summary = "Получить мои запросы на блокировку",
             description = "Получение списка запросов на блокировку текущего пользователя")
     @GetMapping("/my")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Page<CardBlockRequestDto>> getMyBlockRequests(
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
-            Pageable pageable,
-            HttpServletRequest request) {
+            Pageable pageable) {
 
-        Long userId = userUtil.getUserIdFromToken(request);
-
+        Long userId = userUtil.getCurrentUserId();
         Page<CardBlockRequestDto> blockRequests = cardBlockRequestService.getUserBlockRequests(userId, pageable);
-
         return ResponseEntity.ok(blockRequests);
     }
 
@@ -84,14 +78,11 @@ public class CardBlockRequestController {
     @PostMapping("/{id}/cancel")
     @PreAuthorize("@authenticatedUserUtil.isCardOwner(#id, authentication.name)")
     public ResponseEntity<HttpStatus> cancelBlockRequest(
-            @Parameter(description = "ID запроса на блокировку") @PathVariable Long id,
-            HttpServletRequest request) {
+            @Parameter(description = "ID запроса на блокировку") @PathVariable Long id) {
 
-        Long userId = userUtil.getUserIdFromToken(request);
-        String userName = userUtil.getUserNameFromToken(request);
-
+        Long userId = userUtil.getCurrentUserId();
+        String userName = userUtil.getCurrentUsername();
         log.info("Пользователь {} отменяет запрос на блокировку с ID: {}", userName, id);
-
         cardBlockRequestService.cancelBlockRequest(id, userId);
 
         return ResponseEntity.ok().body(HttpStatus.OK);
@@ -103,7 +94,6 @@ public class CardBlockRequestController {
     @PreAuthorize("@authenticatedUserUtil.isCardOwner(#id, authentication.name) or hasRole('ADMIN')")
     public ResponseEntity<CardBlockRequestDto> getBlockRequest(
             @Parameter(description = "ID запроса на блокировку") @PathVariable Long id) {
-
         CardBlockRequestDto blockRequest = cardBlockRequestService.getBlockRequestById(id);
 
         return ResponseEntity.ok(blockRequest);
@@ -149,11 +139,10 @@ public class CardBlockRequestController {
     public ResponseEntity<CardBlockRequestDto> approveBlockRequest(
             @Parameter(description = "ID запроса на блокировку") @PathVariable Long id,
             @Parameter(description = "Комментарий администратора")
-            @RequestParam(required = false) String adminComment,
-            HttpServletRequest request) {
+            @RequestParam(required = false) String adminComment) {
 
-        Long adminId = userUtil.getUserIdFromToken(request);
-        String adminName = userUtil.getUserNameFromToken(request);
+        Long adminId = userUtil.getCurrentUserId();
+        String adminName = userUtil.getCurrentUsername();
 
         log.info("Администратор {} одобряет запрос на блокировку с ID: {}", adminName, id);
 
@@ -169,16 +158,13 @@ public class CardBlockRequestController {
     public ResponseEntity<CardBlockRequestDto> rejectBlockRequest(
             @Parameter(description = "ID запроса на блокировку") @PathVariable Long id,
             @Parameter(description = "Комментарий администратора (причина отклонения)")
-            @RequestParam(required = false) String adminComment,
-            HttpServletRequest request) {
+            @RequestParam(required = false) String adminComment) {
 
-        Long adminId = userUtil.getUserIdFromToken(request);
-        String adminName = userUtil.getUserNameFromToken(request);
-
+        Long adminId = userUtil.getCurrentUserId();
+        String adminName = userUtil.getCurrentUsername();
         log.info("Администратор {} отклоняет запрос на блокировку с ID: {}, причина: {}", adminName, id, adminComment);
 
         CardBlockRequestDto blockRequest = cardBlockRequestService.rejectBlockRequest(id, adminId, adminComment);
-
         return ResponseEntity.ok(blockRequest);
     }
 }

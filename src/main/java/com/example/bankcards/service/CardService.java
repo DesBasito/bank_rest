@@ -43,12 +43,15 @@ public class CardService {
         log.info("Создание карты для пользователя с ID: {}", ownerId);
 
         User owner = userRepository.findById(ownerId)
-                .orElseThrow(() -> new NoSuchElementException("Пользователь с номером телефоном " + ownerId + " не найден"));
+                .orElseThrow(() -> new NoSuchElementException("Пользователь с номером телефона " + ownerId + " не найден"));
 
-        String cardNumber = encryptionUtil.generateCardNumber();
-        System.out.println(cardNumber);
+        String plainCardNumber = encryptionUtil.generateCardNumber();
+
+        String encryptedCardNumber = encryptionUtil.encryptCardNumber(plainCardNumber);
+        log.debug("Создается карта с зашифрованным номером для пользователя: {}", owner.getFullName());
+
         Card card = new Card();
-        card.setCardNumber(encryptionUtil.encryptCardNumber(cardNumber));
+        card.setCardNumber(encryptedCardNumber);
         card.setOwner(owner);
         card.setType(cardType);
         card.setExpiryDate(LocalDate.now().plusYears(this.expiryDate));

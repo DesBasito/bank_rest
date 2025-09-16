@@ -6,6 +6,12 @@ target/
 !**/src/test/**/target/
 **/logs
 
+# Environment files
+.env
+.env.local
+.env.test
+.env.prod
+
 ### STS ###
 .apt_generated
 .classpath

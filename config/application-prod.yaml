@@ -1,7 +1,7 @@
 server:
-  port: ${SERVER_PORT}
+  port: 9999
   servlet:
-    context-path: ${SERVER_CONTEXT_PATH}
+    context-path: /api/v1
 
 spring:
   application:
@@ -15,6 +15,12 @@ spring:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 300000
+      max-lifetime: 1200000
+      connection-timeout: 30000
 
   jpa:
     hibernate:
@@ -23,8 +29,10 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
+        format_sql: false
         default_schema: public
+        jdbc:
+          batch_size: 20
 
   liquibase:
     change-log: classpath:db/migration/master.yaml
@@ -35,29 +43,39 @@ spring:
       name: admin
       password: admin
 
-# JWT Configuration
 jwt:
   secret: ${JWT_SECRET}
 
-# Application specific settings
 app:
   encryption:
     key: ${ENCRYPTION_KEY}
   expiry_date: ${APP_EXPIRY_DATE}
 
-# Logging
+
 logging:
   file:
     name: ${LOG_FILE_PATH}
   logback:
     rolling policy:
-      max-history: 5
-      max-file-size: 10MB
+      max-history: 30
+      max-file-size: 50MB
+      total-size-cap: 1GB
   level:
     root: ${LOG_LEVEL_ROOT}
     com.example.bankcards: ${LOG_LEVEL_APP}
-    org.springframework.security: DEBUG
+    org.springframework.security: WARN
     org.hibernate.SQL: ERROR
     liquibase: INFO
+    org.springframework.web: WARN
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when_authorized

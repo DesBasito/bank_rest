@@ -57,9 +57,7 @@ public class AdminController {
     @GetMapping("/{id}")
     public ResponseEntity<UserDto> getUser(
             @Parameter(description = "ID пользователя") @PathVariable Long id) {
-
         UserDto user = userService.getUserById(id);
-
         return ResponseEntity.ok(user);
     }
 
@@ -67,8 +65,7 @@ public class AdminController {
             description = "Создание нового пользователя администратором")
     @PostMapping
     public ResponseEntity<String> createUser(
-            @Valid @RequestBody SignUpRequest userDto,
-            @Parameter(description = "Пароль пользователя") @RequestParam String password) {
+            @Valid @RequestBody SignUpRequest userDto) {
 
         return ResponseEntity.ok("Пользователь " + userDto.getFullName() + " создан");
     }
@@ -81,9 +78,7 @@ public class AdminController {
             @Parameter(description = "ID пользователя") @PathVariable Long id) {
 
         UserDto user = userService.toggleUserStatus(id);
-
         String message = user.getIsActive() ? "Пользователь активирован: " + user.getFullName() : "Пользователь " + user.getFullName() + " заблокирован";
-
         return ResponseEntity.ok(message);
     }
 
@@ -101,7 +96,6 @@ public class AdminController {
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteUser(
             @Parameter(description = "ID пользователя") @PathVariable Long id) {
-
         userService.deleteUser(id);
         return ResponseEntity.ok("Пользователь удален");
     }

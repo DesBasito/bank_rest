@@ -12,7 +12,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,9 +30,10 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @Tag(name = "Заявки на карты", description = "Управление заявками на создание карт")
 public class CardApplicationController {
-
     private final CardApplicationService cardApplicationService;
     private final AuthenticatedUserUtil userUtil;
+
+
 
     @Operation(summary = "Создать заявку на карту",
             description = "Создание заявки на новую карту пользователем")
@@ -46,14 +46,11 @@ public class CardApplicationController {
     @PreAuthorize("hasRole('USER')")
     @PostMapping
     public ResponseEntity<CardApplicationDto> createApplication(
-            @Valid @RequestBody CardApplicationRequest request,
-            HttpServletRequest httpRequest) {
+            @Valid @RequestBody CardApplicationRequest request) {
 
-        Long userId = userUtil.getUserIdFromToken(httpRequest);
-        String userName = userUtil.getUserNameFromToken(httpRequest);
-
+        Long userId = userUtil.getCurrentUserId();
+        String userName = userUtil.getCurrentUsername();
         log.info("Пользователь {} создает заявку на карту типа {}", userName, request.getCardType());
-
         CardApplicationDto application = cardApplicationService.createCardApplication(userId, request);
 
         return ResponseEntity.ok(application);
@@ -65,13 +62,10 @@ public class CardApplicationController {
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Page<CardApplicationDto>> getMyApplications(
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
-            Pageable pageable,
-            HttpServletRequest request) {
+            Pageable pageable) {
 
-        Long userId = userUtil.getUserIdFromToken(request);
-
+        Long userId = userUtil.getCurrentUserId();
         Page<CardApplicationDto> applications = cardApplicationService.getUserApplications(userId, pageable);
-
         return ResponseEntity.ok(applications);
     }
 
@@ -80,16 +74,13 @@ public class CardApplicationController {
     @PostMapping("/{id}/cancel")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<CardApplicationDto> cancelApplication(
-            @Parameter(description = "ID заявки") @PathVariable Long id,
-            HttpServletRequest request) {
+            @Parameter(description = "ID заявки") @PathVariable Long id) {
 
-        Long userId = userUtil.getUserIdFromToken(request);
-        String userName = userUtil.getUserNameFromToken(request);
+        Long userId = userUtil.getCurrentUserId();
+        String userName = userUtil.getCurrentUsername();
 
         log.info("Пользователь {} отменяет заявку с ID: {}", userName, id);
-
         CardApplicationDto application = cardApplicationService.cancelCardApplication(id, userId);
-
         return ResponseEntity.ok(application);
     }
 
@@ -133,9 +124,7 @@ public class CardApplicationController {
             @Parameter(description = "ID заявки") @PathVariable Long id) {
 
         log.info("Администратор одобряет заявку с ID: {}", id);
-
         CardDto card = cardApplicationService.approveCardApplication(id);
-
         return ResponseEntity.ok(card);
     }
 
@@ -149,9 +138,7 @@ public class CardApplicationController {
             @RequestParam(required = false) String reason) {
 
         log.info("Администратор отклоняет заявку с ID: {}, причина: {}", id, reason);
-
         CardApplicationDto application = cardApplicationService.rejectCardApplication(id, reason);
-
         return ResponseEntity.ok(application);
     }
 }
