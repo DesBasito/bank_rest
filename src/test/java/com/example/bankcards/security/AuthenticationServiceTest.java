@@ -81,7 +81,7 @@ class AuthenticationServiceTest {
                 .middleName("Тестович")
                 .phoneNumber("500123321")
                 .password("hashed123")
-                .roles(Set.of(new Role(2L,"ADMIN","KUKU",null)))
+                .role(new Role(2L,"ADMIN","KUKU",null))
                 .enabled(true)
                 .build();
 

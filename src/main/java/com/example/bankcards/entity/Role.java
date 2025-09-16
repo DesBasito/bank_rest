@@ -7,7 +7,9 @@ import lombok.*;
 import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
 
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -33,5 +35,5 @@ public class Role {
     String description;
 
     @OneToMany(mappedBy = "role", fetch = FetchType.LAZY)
-    Set<User> users = new LinkedHashSet<>();
+    List<User> users = new ArrayList<>();
 }
