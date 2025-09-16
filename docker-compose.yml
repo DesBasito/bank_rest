@@ -30,13 +30,18 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: bank_cards_app
+    ports:
+      - "${SERVER_PORT:-9999}:9999"
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      SERVER_PORT: ${SERVER_PORT:-9999}
+      SERVER_CONTEXT_PATH: ${SERVER_CONTEXT_PATH}
       DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
       DB_USERNAME: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      APP_EXPIRY_DATE: ${APP_EXPIRY_DATE}
       LOG_LEVEL_ROOT: ${LOG_LEVEL_ROOT}
       LOG_LEVEL_APP: ${LOG_LEVEL_APP}
       LOG_FILE_PATH: ${LOG_FILE_PATH}
