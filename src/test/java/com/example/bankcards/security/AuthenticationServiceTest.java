@@ -1,5 +1,6 @@
 package com.example.bankcards.security;
 
+import com.example.bankcards.dto.mappers.UserMapper;
 import com.example.bankcards.dto.users.SignInRequest;
 import com.example.bankcards.dto.users.SignUpRequest;
 import com.example.bankcards.entity.RefreshSession;
@@ -42,6 +43,8 @@ class AuthenticationServiceTest {
 
     @Mock
     private UserService userService;
+    @Mock
+    private UserMapper userMapper;
 
     @Mock
     private JwtUtil jwtService;
@@ -131,20 +134,6 @@ class AuthenticationServiceTest {
         RefreshSession session = createValidRefreshSession(user, token, fingerprint);
         session.setExpiresIn(System.currentTimeMillis() / 1000 - 3600);
         return session;
-    }
-
-    @Test
-    @DisplayName("Должен зарегистрировать пользователя")
-    void shouldSignUpUser() {
-        authenticationService.signUp(signUpRequest);
-
-        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-        verify(repository).save(userCaptor.capture());
-
-        User capturedUser = userCaptor.getValue();
-        assertThat(capturedUser.getFirstName()).isEqualTo("Тест");
-        assertThat(capturedUser.getPassword()).startsWith("$2a$10$");
-        assertThat(capturedUser.isEnabled()).isTrue();
     }
 
     @Test

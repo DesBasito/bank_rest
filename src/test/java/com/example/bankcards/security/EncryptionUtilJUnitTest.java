@@ -26,7 +26,6 @@ class EncryptionUtilJUnitTest {
     @BeforeEach
     void setUp() {
         encryptionUtil = new EncryptionUtil(cardRepository);
-        // Устанавливаем тестовый ключ шифрования
         ReflectionTestUtils.setField(encryptionUtil, "encryptionKey",
                 "cd0211c7721d48006aff56996fe13e33d2b4924672b3a6aa2d2bf7786bfa0fee");
     }
@@ -84,15 +83,13 @@ class EncryptionUtilJUnitTest {
     @Test
     @DisplayName("Должен валидировать номера карт по алгоритму Луна")
     public void testCardNumberValidation() {
-        // Валидные номера
         assertThat(encryptionUtil.isValidCardNumber("4000000000000002")).isTrue();
         assertThat(encryptionUtil.isValidCardNumber("5555555555554444")).isTrue();
 
-        // Невалидные номера
-        assertThat(encryptionUtil.isValidCardNumber("4000000000000001")).isFalse(); // неверная контрольная сумма
-        assertThat(encryptionUtil.isValidCardNumber("123")).isFalse(); // слишком короткий
-        assertThat(encryptionUtil.isValidCardNumber("12345678901234567890")).isFalse(); // слишком длинный
-        assertThat(encryptionUtil.isValidCardNumber("abcd1234efgh5678")).isFalse(); // содержит буквы
-        assertThat(encryptionUtil.isValidCardNumber(null)).isFalse(); // null
+        assertThat(encryptionUtil.isValidCardNumber("4000000000000001")).isFalse();
+        assertThat(encryptionUtil.isValidCardNumber("123")).isFalse();
+        assertThat(encryptionUtil.isValidCardNumber("12345678901234567890")).isFalse();
+        assertThat(encryptionUtil.isValidCardNumber("abcd1234efgh5678")).isFalse();
+        assertThat(encryptionUtil.isValidCardNumber(null)).isFalse();
     }
 }
