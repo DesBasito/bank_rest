@@ -1,6 +1,8 @@
 package com.example.bankcards.dto.mappers;
 
 import com.example.bankcards.dto.transactions.TransactionDto;
+import com.example.bankcards.dto.transactions.TransferRequest;
+import com.example.bankcards.entity.Card;
 import com.example.bankcards.entity.Transaction;
 import com.example.bankcards.enums.EnumInterface;
 import com.example.bankcards.enums.TransactionStatus;
@@ -27,5 +29,32 @@ public class TransactionMapper {
         dto.setErrorMessage(transaction.getErrorMessage());
 
         return dto;
+    }
+
+    public Transaction toEntity(Card toCard, Card fromCard, TransferRequest request) {
+        String description = request.getToCardId().equals(request.getFromCardId())
+                ? "Пополнение счета через терминал"
+                : request.getDescription();
+        return Transaction.builder()
+                .fromCard(fromCard)
+                .toCard(toCard)
+                .amount(request.getAmount())
+                .description(description)
+                .status(TransactionStatus.SUCCESS.name())
+                .build();
+    }
+
+    public Transaction toEntityWithError(Card toCard, Card fromCard, TransferRequest request, String err) {
+        String description = request.getToCardId().equals(request.getFromCardId())
+                ? "Пополнение счета через терминал"
+                : request.getDescription();
+        return Transaction.builder()
+                .fromCard(fromCard)
+                .toCard(toCard)
+                .amount(request.getAmount())
+                .description(description)
+                .status(TransactionStatus.FAILED.name())
+                .errorMessage(err)
+                .build();
     }
 }

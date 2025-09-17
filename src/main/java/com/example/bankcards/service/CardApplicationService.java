@@ -1,8 +1,8 @@
 package com.example.bankcards.service;
 
-import com.example.bankcards.dto.cards.CardDto;
 import com.example.bankcards.dto.cardApplication.CardApplicationDto;
 import com.example.bankcards.dto.cardApplication.CardApplicationRequest;
+import com.example.bankcards.dto.cards.CardDto;
 import com.example.bankcards.dto.mappers.CardApplicationMapper;
 import com.example.bankcards.entity.CardApplication;
 import com.example.bankcards.entity.User;
@@ -35,15 +35,7 @@ public class CardApplicationService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("Пользователь не найден"));
-
-        CardApplication application = CardApplication.builder()
-                .user(user)
-                .cardType(request.getCardType())
-                .comment(request.getComment())
-                .status(CardRequestStatus.PENDING.name())
-                .createdAt(Instant.now())
-                .build();
-
+        CardApplication application = mapper.toEntity(user, request);
         CardApplication savedApplication = cardApplicationRepository.save(application);
 
         log.info("Заявка на карту создана с ID: {}", savedApplication.getId());
@@ -106,18 +98,15 @@ public class CardApplicationService {
         if (!application.getUser().getId().equals(userId)) {
             throw new IllegalArgumentException("Нет доступа к этой заявке");
         }
-
         if (!CardRequestStatus.PENDING.name().equals(application.getStatus())) {
             throw new IllegalArgumentException("Можно отменить только заявки в статусе 'Ожидание'");
         }
-
         application.setStatus(CardRequestStatus.CANCELLED.name());
         application.setProcessedAt(Instant.now());
 
         CardApplication savedApplication = cardApplicationRepository.save(application);
 
         log.info("Заявка отменена пользователем");
-
         return mapper.mapToDto(savedApplication);
     }
 

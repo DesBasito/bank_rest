@@ -32,6 +32,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AuthenticationService {
     private final UserService userService;
+    private final UserMapper userMapper;
     private final JwtUtil jwtService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
@@ -42,16 +43,7 @@ public class AuthenticationService {
     private static final String REFRESH_TOKEN_PATH = "/api/auth";
 
     public void signUp(SignUpRequest request) {
-        User user = User.builder()
-                .firstName(request.getName())
-                .lastName(request.getSurname())
-                .middleName(request.getMiddleName())
-                .phoneNumber(request.getPhoneNumber())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .role(new Role().setId(1L))
-                .enabled(true)
-                .build();
-
+        User user = userMapper.toEntity(request);
         userService.create(user);
     }
 
@@ -126,7 +118,7 @@ public class AuthenticationService {
                 .user(user)
                 .fingerprint(fingerprint)
                 .ua(request.getHeader("User-Agent"))
-                .ip(getClientIpAddress(request)) // ✅ ИСПРАВЛЕНО: Правильное получение IP
+                .ip(getClientIpAddress(request))
                 .expiresIn(System.currentTimeMillis() / 1000 + (60 * 60 * 24 * 30))
                 .build();
         refreshSessionRepository.save(refreshSession);

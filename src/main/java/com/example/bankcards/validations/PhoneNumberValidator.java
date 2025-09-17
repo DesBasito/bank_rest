@@ -4,6 +4,7 @@ import com.example.bankcards.repositories.UserRepository;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import lombok.RequiredArgsConstructor;
+
 import java.util.regex.Pattern;
 
 @RequiredArgsConstructor

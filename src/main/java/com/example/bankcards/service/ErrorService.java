@@ -5,7 +5,6 @@ import jakarta.validation.ConstraintViolation;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.multipart.MultipartException;
 
 import java.util.*;
 
@@ -69,18 +68,6 @@ public class ErrorService {
         return "неизвестное поле";
     }
 
-
-
-
-    public ErrorResponseBody makeResponse(MultipartException e) {
-        String message = Optional.ofNullable(e.getMessage())
-                .orElse("Недопустимый multipart-запрос или загрузка файла");
-
-        return ErrorResponseBody.builder()
-                .title("Ошибка загрузки файла")
-                .response(Map.of("errors", List.of(message)))
-                .build();
-    }
 
     public ErrorResponseBody makeResponse(Exception e) {
         String message = e.getMessage();

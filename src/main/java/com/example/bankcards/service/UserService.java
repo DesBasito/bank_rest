@@ -15,7 +15,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 import java.util.NoSuchElementException;
 
 @Slf4j
@@ -31,8 +30,6 @@ public class UserService implements UserDetailsService {
     @Transactional
     public User create(User user) {
         log.info("Создание нового пользователя: {}", user.getFullName());
-        user.setCreatedAt(Instant.now());
-        user.setUpdatedAt(Instant.now());
         return repository.save(user);
     }
 
@@ -63,10 +60,8 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new NoSuchElementException("Пользователь с ID " + id + " не найден"));
 
         user.setEnabled(!user.getEnabled());
-        user.setUpdatedAt(Instant.now());
 
         User updatedUser = repository.save(user);
-
         log.info("Статус пользователя {} изменен на: {}",
                 updatedUser.getFullName(), updatedUser.getEnabled() ? "активен" : "заблокирован");
 
@@ -80,7 +75,7 @@ public class UserService implements UserDetailsService {
         User user = repository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Пользователь с ID " + id + " не найден"));
 
-        boolean hasActiveCards = cardRepository.findActiveCardsByOwnerId(id).size() > 0;
+        boolean hasActiveCards = cardRepository.findActiveCardsByOwnerId(id).isEmpty();
         if (hasActiveCards) {
             throw new IllegalArgumentException("Нельзя удалить пользователя с активными картами");
         }

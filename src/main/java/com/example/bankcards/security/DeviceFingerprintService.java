@@ -46,9 +46,6 @@ public class DeviceFingerprintService {
         return hashString(rawFingerprint);
     }
 
-    /**
-     * Получает реальный IP адрес клиента (учитывая прокси)
-     */
     private String getClientIpAddress(HttpServletRequest request) {
         String xForwardedFor = request.getHeader("X-Forwarded-For");
         if (StringUtils.hasText(xForwardedFor)) {
@@ -63,9 +60,6 @@ public class DeviceFingerprintService {
         return request.getRemoteAddr();
     }
 
-    /**
-     * Хеширует строку с использованием SHA-256
-     */
     private String hashString(String input) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");

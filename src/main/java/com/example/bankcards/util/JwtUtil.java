@@ -1,7 +1,9 @@
 package com.example.bankcards.util;
 
 import com.example.bankcards.repositories.UserRepository;
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +23,6 @@ public class JwtUtil {
 
     @Value("${jwt.secret}")
     private String secret;
-    private final UserRepository repository;
 
     private SecretKey getSigningKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secret);
@@ -47,9 +48,6 @@ public class JwtUtil {
         Map<String, Object> claims = new HashMap<>();
         if (userDetails instanceof com.example.bankcards.entity.User user) {
             claims.put("userId", user.getId());
-            claims.put("firstName", user.getFirstName());
-            claims.put("middleName", user.getMiddleName());
-            claims.put("lastName", user.getLastName());
         }
         long jwtExpiration = 5 * 24 * 60 * 60 * 1000L;
         return createToken(claims, userDetails.getUsername(), jwtExpiration);
@@ -91,40 +89,6 @@ public class JwtUtil {
             return true;
         } catch (JwtException | IllegalArgumentException e) {
             return false;
-        }
-    }
-
-    public String extractFullName(String token) {
-        try {
-            Claims claims = extractAllClaims(token);
-            Object firstName = claims.get("firstName");
-            Object lastName = claims.get("lastName");
-            Object middleName = claims.get("middleName");
-
-            String firstNameStr = (firstName instanceof String) ? (String) firstName : "";
-            String lastNameStr = (lastName instanceof String) ? (String) lastName : "";
-            String middleNameStr = (middleName instanceof String) ? (String) middleName : "";
-
-            StringBuilder fullName = new StringBuilder();
-
-            if (!lastNameStr.isEmpty()) {
-                fullName.append(lastNameStr);
-            }
-
-            if (!firstNameStr.isEmpty()) {
-                if (fullName.length() > 0) fullName.append(" ");
-                fullName.append(firstNameStr);
-            }
-
-            if (!middleNameStr.isEmpty()) {
-                if (fullName.length() > 0) fullName.append(" ");
-                fullName.append(middleNameStr);
-            }
-
-            return fullName.length() > 0 ? fullName.toString() : null;
-
-        } catch (JwtException | IllegalArgumentException e) {
-            return null;
         }
     }
 

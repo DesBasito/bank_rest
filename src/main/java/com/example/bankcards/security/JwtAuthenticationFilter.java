@@ -1,9 +1,5 @@
 package com.example.bankcards.security;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-
 import com.example.bankcards.service.UserService;
 import com.example.bankcards.util.JwtUtil;
 import io.jsonwebtoken.JwtException;
@@ -22,6 +18,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 @Slf4j
 @Component
@@ -45,7 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     );
 
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+    protected boolean shouldNotFilter(HttpServletRequest request){
         String path = request.getRequestURI();
         String contextPath = request.getContextPath();
 

@@ -80,11 +80,9 @@ public class CardBlockRequestController {
     public ResponseEntity<HttpStatus> cancelBlockRequest(
             @Parameter(description = "ID запроса на блокировку") @PathVariable Long id) {
 
-        Long userId = userUtil.getCurrentUserId();
         String userName = userUtil.getCurrentUsername();
         log.info("Пользователь {} отменяет запрос на блокировку с ID: {}", userName, id);
-        cardBlockRequestService.cancelBlockRequest(id, userId);
-
+        cardBlockRequestService.cancelBlockRequest(id);
         return ResponseEntity.ok().body(HttpStatus.OK);
     }
 
@@ -141,13 +139,8 @@ public class CardBlockRequestController {
             @Parameter(description = "Комментарий администратора")
             @RequestParam(required = false) String adminComment) {
 
-        Long adminId = userUtil.getCurrentUserId();
-        String adminName = userUtil.getCurrentUsername();
-
-        log.info("Администратор {} одобряет запрос на блокировку с ID: {}", adminName, id);
-
-        CardBlockRequestDto blockRequest = cardBlockRequestService.approveBlockRequest(id, adminId, adminComment);
-
+        log.info("Администратор одобряет запрос на блокировку с ID: {}", id);
+        CardBlockRequestDto blockRequest = cardBlockRequestService.approveBlockRequest(id, adminComment);
         return ResponseEntity.ok(blockRequest);
     }
 
@@ -160,11 +153,8 @@ public class CardBlockRequestController {
             @Parameter(description = "Комментарий администратора (причина отклонения)")
             @RequestParam(required = false) String adminComment) {
 
-        Long adminId = userUtil.getCurrentUserId();
-        String adminName = userUtil.getCurrentUsername();
-        log.info("Администратор {} отклоняет запрос на блокировку с ID: {}, причина: {}", adminName, id, adminComment);
-
-        CardBlockRequestDto blockRequest = cardBlockRequestService.rejectBlockRequest(id, adminId, adminComment);
+        log.info("Администратор отклоняет запрос на блокировку с ID: {}, причина: {}", id, adminComment);
+        CardBlockRequestDto blockRequest = cardBlockRequestService.rejectBlockRequest(id, adminComment);
         return ResponseEntity.ok(blockRequest);
     }
 }

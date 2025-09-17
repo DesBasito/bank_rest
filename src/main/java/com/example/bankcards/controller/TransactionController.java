@@ -20,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -49,10 +50,9 @@ public class TransactionController {
     })
     @PostMapping("/transfer")
     public ResponseEntity<TransactionDto> transferBetweenMyCards(
-            @Valid @RequestBody TransferRequest request,
-            HttpServletRequest httpRequest) {
+            @Valid @RequestBody TransferRequest request) {
 
-        String userName = userUtil.getUserNameFromToken(httpRequest);
+        String userName = userUtil.getCurrentUsername();
         log.info("Пользователь {} инициирует перевод с карты {} на карту {} на сумму {}",
                 userName, request.getFromCardId(), request.getToCardId(), request.getAmount());
         TransactionDto transaction = transactionService.transferBetweenUserCards(request);
@@ -66,10 +66,9 @@ public class TransactionController {
             @Parameter(description = "ID карты для фильтрации (необязательно)")
             @RequestParam(required = false) Long cardId,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
-            Pageable pageable,
-            HttpServletRequest request) {
+            Pageable pageable) {
 
-        Long userId = userUtil.getUserIdFromToken(request);
+        Long userId = userUtil.getCurrentUserId();
         Page<TransactionDto> transactions = transactionService.getUserTransactions(userId, cardId, pageable);
         return ResponseEntity.ok(transactions);
     }

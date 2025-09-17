@@ -70,7 +70,7 @@ public class CardDecryptionAspect {
             }
         } catch (Exception e) {
             log.warn("Ошибка при расшифровке номера карты ID: {}, причина: {}",
-                    card != null ? card.getId() : "unknown", e.getMessage());
+                    card.getId(), e.getMessage());
         }
     }
 

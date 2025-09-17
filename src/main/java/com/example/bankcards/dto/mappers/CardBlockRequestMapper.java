@@ -1,6 +1,8 @@
 package com.example.bankcards.dto.mappers;
 
+import com.example.bankcards.dto.cards.CardBlockRequestCreateDto;
 import com.example.bankcards.dto.cards.CardBlockRequestDto;
+import com.example.bankcards.entity.Card;
 import com.example.bankcards.entity.CardBlockRequest;
 import com.example.bankcards.enums.CardRequestStatus;
 import com.example.bankcards.enums.EnumInterface;
@@ -23,6 +25,14 @@ public class CardBlockRequestMapper {
                 .adminComment(request.getAdminComment())
                 .createdAt(request.getCreatedAt())
                 .processedAt(request.getProcessedAt())
+                .build();
+    }
+
+    public CardBlockRequest toEntity(Card card, CardBlockRequestCreateDto request) {
+        return CardBlockRequest.builder()
+                .card(card)
+                .reason(request.getReason())
+                .status(CardRequestStatus.PENDING.name())
                 .build();
     }
 }

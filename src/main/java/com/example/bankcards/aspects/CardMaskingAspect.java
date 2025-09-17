@@ -9,10 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Aspect
 @Component
@@ -49,9 +46,7 @@ public class CardMaskingAspect {
             if (!isAlreadyDecrypted(cardDto.getCardNumber())) {
                 cardDto.setCardNumber(encryptionUtil.decryptCardNumber(cardDto.getCardNumber()));
             }
-            if (isAdmin) {
-                maskedNumber = encryptionUtil.maskCardNumber(cardDto.getCardNumber());
-            } else if (isOwner) {
+            if (isOwner) {
                 maskedNumber = cardDto.getCardNumber();
             } else {
                 maskedNumber = encryptionUtil.maskCardNumber(cardDto.getCardNumber());

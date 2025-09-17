@@ -5,7 +5,6 @@ import com.example.bankcards.dto.transactions.TransactionDto;
 import com.example.bankcards.dto.transactions.TransferRequest;
 import com.example.bankcards.entity.Card;
 import com.example.bankcards.entity.Transaction;
-import com.example.bankcards.enums.TransactionStatus;
 import com.example.bankcards.repositories.CardRepository;
 import com.example.bankcards.repositories.TransactionRepo;
 import com.example.bankcards.util.AuthenticatedUserUtil;
@@ -18,7 +17,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
@@ -40,17 +38,10 @@ public class TransactionService {
 
         Card toCard = cardRepository.findById(request.getToCardId())
                 .orElseThrow(() -> new NoSuchElementException("Карта получателя не найдена"));
-        String description = request.getToCardId().equals(request.getFromCardId())
-                ? "Пополнение счета через терминал"
-                : request.getDescription();
+
         try {
-            Transaction transaction = Transaction.builder()
-                    .fromCard(fromCard)
-                    .toCard(toCard)
-                    .amount(request.getAmount())
-                    .description(description)
-                    .status(TransactionStatus.SUCCESS.name())
-                    .build();
+            Transaction transaction = transactionMapper.toEntity(fromCard, toCard, request);
+
             if (!request.getFromCardId().equals(request.getToCardId())) {
                 cardService.deductBalance(request.getFromCardId(), request.getAmount());
             }
@@ -58,27 +49,17 @@ public class TransactionService {
 
             log.info("Перевод пользователя {} с карты {} на карту {} на сумму {}",
                     fromCard.getOwner().getFullName(), request.getFromCardId(), request.getToCardId(), request.getAmount());
-
             Transaction savedTransaction = transactionRepository.save(transaction);
 
             log.info("Перевод выполнен успешно. ID транзакции: {}", savedTransaction.getId());
-
             return transactionMapper.toDto(savedTransaction);
 
         } catch (Exception e) {
             log.error("Ошибка при выполнении перевода: {}", e.getMessage(), e);
-            Transaction failedTransaction = Transaction.builder()
-                    .fromCard(fromCard)
-                    .toCard(toCard)
-                    .amount(request.getAmount())
-                    .description(request.getDescription())
-                    .status(TransactionStatus.CANCELLED.name())
-                    .createdAt(Instant.now())
-                    .processedAt(Instant.now())
-                    .errorMessage(e.getMessage())
-                    .build();
-
+            Transaction failedTransaction = transactionMapper
+                    .toEntityWithError(toCard,fromCard,request, e.getMessage());
             transactionRepository.save(failedTransaction);
+
             throw new RuntimeException("Ошибка при выполнении перевода: " + e.getMessage());
         }
     }
@@ -93,7 +74,6 @@ public class TransactionService {
             transactions = transactionRepository.findByCardId(cardId, pageable);
             Card card = cardRepository.findById(cardId)
                     .orElseThrow(() -> new NoSuchElementException("Карта не найдена"));
-            System.out.println(card.getCardNumber());
             if (!Objects.equals(card.getOwner().getId(), userId)) {
                 throw new IllegalArgumentException("Карта не принадлежит пользователю");
             }
@@ -107,13 +87,12 @@ public class TransactionService {
     @Transactional(readOnly = true)
     public TransactionDto getTransactionById(Long transactionId) {
         Long userId = userUtil.getCurrentUserId();
-
         log.info("Получение транзакции {} для пользователя {}", transactionId, userId);
 
         Transaction transaction = transactionRepository.findById(transactionId)
                 .orElseThrow(() -> new NoSuchElementException("Транзакция не найдена"));
 
-        boolean hasAccess = Objects.equals(transaction.getFromCard().getOwner().getId(), userId) &&
+        boolean hasAccess = Objects.equals(transaction.getFromCard().getOwner().getId(), userId) ||
                             Objects.equals(transaction.getToCard().getOwner().getId(), userId);
 
         boolean admin = false;

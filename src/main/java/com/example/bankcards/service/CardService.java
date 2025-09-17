@@ -23,7 +23,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -34,8 +33,6 @@ public class CardService {
     private final UserRepository userRepository;
     private final EncryptionUtil encryptionUtil;
     private final CardMapper cardMapper;
-    @Value("${app.expiry_date}")
-    private Integer expiryDate;
     private static final String CARD_NOT_FOUND = "Карта не найдена!";
 
 
@@ -44,23 +41,15 @@ public class CardService {
 
         User owner = userRepository.findById(ownerId)
                 .orElseThrow(() -> new NoSuchElementException("Пользователь с номером телефона " + ownerId + " не найден"));
-
         String plainCardNumber = encryptionUtil.generateCardNumber();
-
         String encryptedCardNumber = encryptionUtil.encryptCardNumber(plainCardNumber);
+
         log.debug("Создается карта с зашифрованным номером для пользователя: {}", owner.getFullName());
 
-        Card card = new Card();
-        card.setCardNumber(encryptedCardNumber);
-        card.setOwner(owner);
-        card.setType(cardType);
-        card.setExpiryDate(LocalDate.now().plusYears(this.expiryDate));
-        card.setStatus(CardStatus.ACTIVE.name());
-        card.setBalance(BigDecimal.ZERO);
-
+        Card card = cardMapper.createEntity(owner, encryptedCardNumber, cardType);
         Card savedCard = cardRepository.save(card);
-        log.info("Карта создана с ID: {}", savedCard.getId());
 
+        log.info("Карта создана с ID: {}", savedCard.getId());
         return cardMapper.toDto(savedCard);
     }
 
@@ -106,7 +95,7 @@ public class CardService {
         }
 
         card.setStatus(CardStatus.BLOCKED.name());
-        Card updatedCard = cardRepository.save(card);
+        cardRepository.save(card);
 
         log.info("Карта {} заблокирована", card);
     }

@@ -1,7 +1,6 @@
 package com.example.bankcards.dto.users;
 
 import com.example.bankcards.validations.ValidPhoneNumber;
-import com.example.bankcards.validations.ValidRoleType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -11,8 +10,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
-
-import java.util.Set;
 
 @Getter
 @Setter

@@ -45,10 +45,9 @@ public class CardController {
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Page<CardDto>> getMyCards(
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
-            Pageable pageable,
-            HttpServletRequest request) {
+            Pageable pageable) {
 
-        Long userId = userUtil.getUserIdFromToken(request);
+        Long userId = userUtil.getCurrentUserId();
 
         Page<CardDto> cards = cardService.getUserCards(userId, pageable);
         return ResponseEntity.ok(cards);
@@ -90,9 +89,8 @@ public class CardController {
             description = "Получение списка активных карт текущего пользователя")
     @GetMapping("/my/active")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<List<CardDto>> getMyActiveCards(HttpServletRequest request) {
-        Long userId = userUtil.getUserIdFromToken(request);
-
+    public ResponseEntity<List<CardDto>> getMyActiveCards() {
+        Long userId = userUtil.getCurrentUserId();
         List<CardDto> cards = cardService.getUserActiveCards(userId);
         return ResponseEntity.ok(cards);
     }
@@ -117,6 +115,27 @@ public class CardController {
             @Parameter(description = "ID карты") @PathVariable Long id) {
 
         CardDto card = cardService.getCardById(id);
+        return ResponseEntity.ok(card);
+    }
+
+    @Operation(summary = "Получить карту по номеру",
+            description = "Получение подробной информации о карте по его номеру")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Информация о карте получена",
+                    content = @Content(schema = @Schema(implementation = CardDto.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "Карта не найдена"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "403",
+                    description = "Нет доступа к карте")
+    })
+    @GetMapping()
+    public ResponseEntity<CardDto> getCardByNumber(
+            @Parameter(description = "Номер карты") @RequestParam String number) {
+        CardDto card = cardService.getCardByNumber(number);
         return ResponseEntity.ok(card);
     }
 
