@@ -5,6 +5,7 @@ import com.example.bankcards.entity.CardBlockRequest;
 import com.example.bankcards.util.EncryptionUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.data.domain.Page;
@@ -23,8 +24,14 @@ public class CardDecryptionAspect {
     @AfterReturning(
             pointcut = "execution(* com.example.bankcards.repositories.CardRepository.*(..)) || " +
                        "execution(* com.example.bankcards.repositories.CardBlockRequestRepository.*(..))",
+//                       "!execution(* com.example.bankcards.repositories.CardRepository.save*(..))",
             returning = "result")
-    public void decryptCardData(Object result) {
+    public void decryptCardData(JoinPoint joinPoint, Object result) {
+        String methodName = joinPoint.getSignature().getName();
+        if (methodName.startsWith("save")|| methodName.contains("update")) {
+            log.debug("Пропускаем расшифровку для метода: {}", methodName);
+            return;
+        }
         if (result instanceof List<?> list) {
             decryptCardsInList(list);
         } else if (result instanceof Page<?> page) {

@@ -111,14 +111,14 @@ paths:
               $ref: "#/components/schemas/TransferRequest"
         required: true
       responses:
-        "200":
-          description: "Перевод успешно выполнен"
+        "400":
+          description: "Некорректные данные для перевода"
           content:
             '*/*':
               schema:
                 $ref: "#/components/schemas/TransactionDto"
-        "400":
-          description: "Некорректные данные для перевода"
+        "200":
+          description: "Перевод успешно выполнен"
           content:
             '*/*':
               schema:
@@ -441,14 +441,14 @@ paths:
           type: "integer"
           format: "int64"
       responses:
-        "200":
-          description: "Заявка одобрена, карта создана"
+        "400":
+          description: "Заявка уже обработана"
           content:
             '*/*':
               schema:
                 $ref: "#/components/schemas/CardDto"
-        "400":
-          description: "Заявка уже обработана"
+        "200":
+          description: "Заявка одобрена, карта создана"
           content:
             '*/*':
               schema:
@@ -601,14 +601,14 @@ paths:
           type: "integer"
           format: "int64"
       responses:
-        "404":
-          description: "Пользователь не найден"
+        "200":
+          description: "Информация о пользователе получена"
           content:
             '*/*':
               schema:
                 $ref: "#/components/schemas/UserDto"
-        "200":
-          description: "Информация о пользователе получена"
+        "404":
+          description: "Пользователь не найден"
           content:
             '*/*':
               schema:
@@ -660,14 +660,14 @@ paths:
           type: "integer"
           format: "int64"
       responses:
-        "200":
-          description: "Информация о транзакции получена"
+        "404":
+          description: "Транзакция не найдена"
           content:
             '*/*':
               schema:
                 $ref: "#/components/schemas/TransactionDto"
-        "404":
-          description: "Транзакция не найдена"
+        "200":
+          description: "Информация о транзакции получена"
           content:
             '*/*':
               schema:
@@ -747,14 +747,14 @@ paths:
           type: "integer"
           format: "int64"
       responses:
-        "404":
-          description: "Карта не найдена"
+        "200":
+          description: "Информация о карте получена"
           content:
             '*/*':
               schema:
                 $ref: "#/components/schemas/CardDto"
-        "200":
-          description: "Информация о карте получена"
+        "404":
+          description: "Карта не найдена"
           content:
             '*/*':
               schema:
@@ -1278,11 +1278,11 @@ components:
           format: "int32"
         sort:
           $ref: "#/components/schemas/SortObject"
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
         numberOfElements:
           type: "integer"
           format: "int32"
-        pageable:
-          $ref: "#/components/schemas/PageableObject"
         empty:
           type: "boolean"
     PageableObject:
@@ -1293,24 +1293,24 @@ components:
           format: "int64"
         sort:
           $ref: "#/components/schemas/SortObject"
+        paged:
+          type: "boolean"
+        unpaged:
+          type: "boolean"
         pageNumber:
           type: "integer"
           format: "int32"
         pageSize:
           type: "integer"
           format: "int32"
-        paged:
-          type: "boolean"
-        unpaged:
-          type: "boolean"
     SortObject:
       type: "object"
       properties:
         empty:
           type: "boolean"
-        sorted:
-          type: "boolean"
         unsorted:
+          type: "boolean"
+        sorted:
           type: "boolean"
     UserDto:
       required:
@@ -1363,11 +1363,11 @@ components:
           format: "int32"
         sort:
           $ref: "#/components/schemas/SortObject"
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
         numberOfElements:
           type: "integer"
           format: "int32"
-        pageable:
-          $ref: "#/components/schemas/PageableObject"
         empty:
           type: "boolean"
     Page:
@@ -1395,11 +1395,11 @@ components:
           format: "int32"
         sort:
           $ref: "#/components/schemas/SortObject"
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
         numberOfElements:
           type: "integer"
           format: "int32"
-        pageable:
-          $ref: "#/components/schemas/PageableObject"
         empty:
           type: "boolean"
     PageCardBlockRequestDto:
@@ -1427,11 +1427,11 @@ components:
           format: "int32"
         sort:
           $ref: "#/components/schemas/SortObject"
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
         numberOfElements:
           type: "integer"
           format: "int32"
-        pageable:
-          $ref: "#/components/schemas/PageableObject"
         empty:
           type: "boolean"
     PageCardApplicationDto:
@@ -1459,11 +1459,11 @@ components:
           format: "int32"
         sort:
           $ref: "#/components/schemas/SortObject"
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
         numberOfElements:
           type: "integer"
           format: "int32"
-        pageable:
-          $ref: "#/components/schemas/PageableObject"
         empty:
           type: "boolean"
   securitySchemes:

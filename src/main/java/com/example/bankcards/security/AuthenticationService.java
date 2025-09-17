@@ -14,19 +14,20 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
-import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
@@ -35,6 +36,8 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final RefreshSessionRepository refreshSessionRepository;
+    private final DeviceFingerprintService deviceFingerprintService;
+
     private static final String REFRESH_TOKEN_COOKIE_NAME = "refreshToken";
     private static final String REFRESH_TOKEN_PATH = "/api/auth";
 
@@ -52,7 +55,6 @@ public class AuthenticationService {
         userService.create(user);
     }
 
-
     public String signIn(SignInRequest signInRequest, HttpServletResponse response, HttpServletRequest request) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 signInRequest.getPhoneNumber(),
@@ -63,35 +65,52 @@ public class AuthenticationService {
                 .userDetailsService()
                 .loadUserByUsername(signInRequest.getPhoneNumber());
 
-        String access =  jwtService.generateToken(user);
+        String access = jwtService.generateToken(user);
         List<RefreshSession> sessions = refreshSessionRepository.findByUserOrderByCreatedAtAsc((User) user, PageRequest.of(0, 5));
         if (sessions.size() >= 5) {
             refreshSessionRepository.deleteAll(sessions);
         }
-        generateRefreshToken((User) user, request.getHeader("Fingerprint"), request, response);
+
+        String fingerprint = getOrGenerateFingerprint(request);
+        generateRefreshToken((User) user, fingerprint, request, response);
+
         return access;
     }
 
     @Transactional
     public String refreshToken(UUID oldToken, HttpServletResponse response, HttpServletRequest request) {
         try {
-            if (oldToken == null){
+            if (oldToken == null) {
                 throw new IllegalArgumentException("Old token is null");
             }
             RefreshSession session = refreshSessionByRefreshToken(oldToken);
             User user = session.getUser();
-            validateRefreshToken(session, request.getHeader("Fingerprint"));
-            generateRefreshToken(user, request.getHeader("Fingerprint"), request, response);
+
+            String fingerprint = getOrGenerateFingerprint(request);
+            validateRefreshToken(session, fingerprint);
+            generateRefreshToken(user, fingerprint, request, response);
             refreshSessionRepository.deleteByRefreshToken(oldToken);
             return jwtService.generateToken(user);
         } catch (NoSuchElementException | IllegalArgumentException e) {
             clearRefreshTokenCookie(response);
             throw e;
         }
-
     }
 
-    private void setRefreshToken(UUID refreshToken, HttpServletResponse response){
+    private String getOrGenerateFingerprint(HttpServletRequest request) {
+        String fingerprint = request.getHeader("Fingerprint");
+
+        if (!StringUtils.hasText(fingerprint)) {
+            fingerprint = deviceFingerprintService.generateFingerprint(request);
+            log.debug("Generated automatic fingerprint: {}", fingerprint);
+        } else {
+            log.debug("Using provided fingerprint: {}", fingerprint);
+        }
+
+        return fingerprint;
+    }
+
+    private void setRefreshToken(UUID refreshToken, HttpServletResponse response) {
         Cookie cookie = new Cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken.toString());
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
@@ -107,11 +126,25 @@ public class AuthenticationService {
                 .user(user)
                 .fingerprint(fingerprint)
                 .ua(request.getHeader("User-Agent"))
-                .ip(request.getRemoteAddr())
+                .ip(getClientIpAddress(request)) // ✅ ИСПРАВЛЕНО: Правильное получение IP
                 .expiresIn(System.currentTimeMillis() / 1000 + (60 * 60 * 24 * 30))
                 .build();
         refreshSessionRepository.save(refreshSession);
         setRefreshToken(newToken, response);
+    }
+
+    private String getClientIpAddress(HttpServletRequest request) {
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        if (StringUtils.hasText(xForwardedFor)) {
+            return xForwardedFor.split(",")[0].trim();
+        }
+
+        String xRealIP = request.getHeader("X-Real-IP");
+        if (StringUtils.hasText(xRealIP)) {
+            return xRealIP;
+        }
+
+        return request.getRemoteAddr();
     }
 
     private RefreshSession refreshSessionByRefreshToken(UUID refreshToken) {
@@ -120,11 +153,13 @@ public class AuthenticationService {
     }
 
     private void validateRefreshToken(RefreshSession session, String fingerprint) {
-        if(!session.getFingerprint().equals(fingerprint)){
+        if (!session.getFingerprint().equals(fingerprint)) {
+            log.warn("Fingerprint mismatch for refresh token. Expected: {}, Got: {}",
+                    session.getFingerprint(), fingerprint);
             throw new IllegalArgumentException("Fingerprint mismatch");
         }
         if (session.getExpiresIn() < System.currentTimeMillis() / 1000) {
-            throw new IllegalArgumentException("Refresh expired");
+            throw new IllegalArgumentException("Refresh token expired");
         }
     }
 
