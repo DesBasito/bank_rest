@@ -4,6 +4,7 @@ import com.example.bankcards.entity.User;
 import com.example.bankcards.util.AuthenticatedUserUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.AuditorAware;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -15,6 +16,10 @@ public class UserAuditorAwareImpl implements AuditorAware<User> {
 
     @Override
     public Optional<User> getCurrentAuditor() {
-        return Optional.of(userUtil.getCurrentUser());
+        try {
+            return Optional.of(userUtil.getCurrentUser());
+        } catch (AccessDeniedException e) {
+            return Optional.empty();
+        }
     }
 }

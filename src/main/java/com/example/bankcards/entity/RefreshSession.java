@@ -6,6 +6,7 @@ import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -19,7 +20,6 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "refresh_sessions")
-@EntityListeners(AuditingEntityListener.class)
 public class RefreshSession {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -55,7 +55,6 @@ public class RefreshSession {
     @ColumnDefault("now()")
     @Column(name = "created_at")
 
-    @CreatedDate
-    private Instant createdAt;
+    private Instant createdAt = Instant.now();
 
 }
